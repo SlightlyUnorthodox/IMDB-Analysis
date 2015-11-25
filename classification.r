@@ -5,11 +5,11 @@
 
 #Dynamically load/install required packages
 ready <- FALSE
-loadPackages <- function() {
+loadPackages3 <- function() {
   if( require(R.utils) == FALSE) { install.packages("R.utils") }
   ready <- TRUE
 }
-while(ready == FALSE) { ready <- loadPackages() }
+while(ready == FALSE) { ready <- loadPackages3() }
 
 #Source dataset creation tools/loads base libraries
 source("datasetCreation.r")

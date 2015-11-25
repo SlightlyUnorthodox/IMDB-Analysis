@@ -5,11 +5,11 @@
 
 #Dynamically load/install required packages
 ready <- FALSE
-loadPackages <- function() {
+loadPackages1 <- function() {
   if( require(R.utils) == FALSE) { install.packages("R.utils") }
   ready <- TRUE
 }
-while(ready == FALSE) { ready <- loadPackages() }
+while(ready == FALSE) { ready <- loadPackages1() }
 
 #Function to streamline file download and initial parsing
 #Complete list of active datasets (NOTE: this is far from all of them, and I'm not sure if all of these are even useful -Dax)
@@ -69,9 +69,6 @@ exploreData <- function(choice,length = 50) {
   print(tail(dt,length))
   dt
 }
-
-testing <- exploreData("running-times",30)
-  
 
 
 
