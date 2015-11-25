@@ -21,6 +21,7 @@ while(ready == FALSE) { ready <- loadPackages() }
 # -"complete-cast"
 # -"composers"
 # -"directors"
+# -"genres"
 # -"keywords"
 # -"literature"
 # -"locations"
@@ -35,56 +36,55 @@ while(ready == FALSE) { ready <- loadPackages() }
 downloadRawDataset <- function(choice) {
   temp <- tempfile() #Prepare space for downloading files
   
-  if(choice == "actors") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/actors.list.gz") }
-  if(choice == "acresses") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/actresses.list.gz") }
-  if(choice == "complete-cast") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/complete-cast.list.gz") }
-  if(choice == "composers") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/directors.list.gz") }
-  if(choice == "directors") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/directors.list.gz") }
-  if(choice == "keywords") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/keywords.list.gz")}
-  if(chocie == "literature") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/literature.list.gz") }
-  if(choice == "locations") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/locations.list.gz") }
+  if(choice == "actors") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/actors.list.gz",temp) }
+  if(choice == "acresses") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/actresses.list.gz",temp) }
+  if(choice == "complete-cast") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/complete-cast.list.gz",temp) }
+  if(choice == "composers") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/directors.list.gz",temp) }
+  if(choice == "directors") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/directors.list.gz",temp) }
+  if(choice == "genres") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/genres.list.gz",temp) }
+  if(choice == "keywords") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/keywords.list.gz",temp)}
+  if(choice == "literature") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/literature.list.gz") }
+  if(choice == "locations") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/locations.list.gz",temp) }
   if(choice == "movies") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/movies.list.gz",temp) }
-  if(choice == "movie-links") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/movie-links.list.gz") }
-  if(choice == "plot") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/plot.list.gz") }
-  if(choice == "producers") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/producers.list.gz") }
-  if(choice == "ratings") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/ratings.list.gz") }
-  if(choice == "release-dates") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/release-dates.list.gz") }
-  if(choice == "running-times") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/running-times.list.gz") }
+  if(choice == "movie-links") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/movie-links.list.gz",temp) }
+  if(choice == "plot") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/plot.list.gz",temp) }
+  if(choice == "producers") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/producers.list.gz",temp) }
+  if(choice == "ratings") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/ratings.list.gz",temp) }
+  if(choice == "release-dates") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/release-dates.list.gz",temp) }
+  if(choice == "running-times") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/running-times.list.gz",temp) }
   
   rawData <- readLines(temp)
   unlink(temp)
   rawData
 }
 
-#Testing process, recorded for posterity and to explain data processing decisions
-testProcedure <- function() {
-  #Prepare space for downloading files
-  temp <- tempfile()
-  
-  
-  #NOTE: had to figure out the data cleaning process, used 'movies.list.gz' as the trial case
-  
-  #Down from IMDB FTP server to temp file
-  download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/movies.list.gz",temp)
-  #Skip manual decompression and read directly as raw text
-  movies.data.raw <- readLines(temp)
-  
-  #Now to see what's inside
-  head(movies.data.raw,100)
-  
-  #Now to check end contents
-  tail(movies.data.raw,20)
-  
-  #NOTE: Will need to skip 14 rows to remove file heading
-  
-  #It appears that that the format is roughly as follows:
-  
-  # [1]     [2]   [3]   [4]   [5]   [6]   [7]
-  # Title   Year     
-  
-  unlink(temp)
+#Function to streamline data examination, choice arg same as above list,length is number passed to head/tail
+# Calls download function, prints header and tail
+# Example:  testing <- exploreData("running-times",30)
+exploreData <- function(choice,length = 50) {
+  dt <- downloadRawDataset(choice)
+  print(head(dt,length))
+  cat("Press [enter] to continue")
+  line <- readline()
+  print(tail(dt,length))
+  dt
 }
 
+testing <- exploreData("running-times",30)
+  
 
+
+
+buildAssocRulesData <- function() {
+  
+}
+
+buildClusteringData <- function() {
+  
+}
+
+buildClassificationData <- function() {
+  
+}
 
 
