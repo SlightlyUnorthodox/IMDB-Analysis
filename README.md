@@ -1,6 +1,9 @@
 # IMDB-Analysis
 Group Project for Fall section of UF CIS4930 Data Mining
 
+# Roadmap Presentation
+Viewable [here](http://htmlpreview.github.io/?https://github.com/SlightlyUnorthodox/IMDB-Analysis/blob/master/roadmap.html)
+
 # Notes (Most recent first)
 
 (Dax) I've been working out some of the kinks in getting ahold of the data so that we can spend minimal time on data cleaning. Hopefully the comments are enough to explain what's going on, if not feel free to message me whenever. Here's an overview,
