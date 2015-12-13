@@ -1,7 +1,7 @@
 CIS 4930 Fall 2015: Data Minining
 Final Project Roadmap
 ========================================================
-author: Dax Gerts, Christine Moore, Carl Amko, Denzel Mathew
+author: Dax Gerts, Christine Moore, Carl Amko, Denzel Mathew, Aaron Silcott
 date: December 2nd & 4th, 2015
 width: 1440
 height: 900
@@ -20,8 +20,14 @@ Project Tasks
 The IMDB Data was retrieved from the site at *http://www.imdb.com/interfaces*
 
 A basic procedure for downloading and preprocessing the datasets would look something like the following,
-
-```{r, eval = FALSE}
+```{r, eval=TRUE,echo=FALSE}
+ready <- FALSE
+loadPackages1 <- function() {
+  if( require(R.utils) == FALSE) { install.packages("R.utils") }
+  ready <- TRUE
+}
+```
+```{r, eval = TRUE}
 temp <- tempfile() #Prepare space for downloading files
 download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/actors.list.gz",temp)
 rawData <- readLines(temp)
@@ -32,7 +38,7 @@ rawData
 1. Dataset Creation - Helper Functions
 ========================================================
 
-```{r, eval=FALSE}
+```{r}
 downloadRawDataset <- function(choice) {
   temp <- tempfile() #Prepare space for downloading files
   
@@ -54,7 +60,8 @@ downloadRawDataset <- function(choice) {
 1. Dataset Creation - Helper Functions (cont.)
 ========================================================
 
-```{r, eval=FALSE}
+```{r}
+while(ready == FALSE) { ready <- loadPackages1() }
 exploreData <- function(choice,length = 50) {
   dt <- downloadRawDataset(choice)
   print(head(dt,length))
@@ -64,3 +71,28 @@ exploreData <- function(choice,length = 50) {
   dt
 }
 ```
+
+
+1. Dataset Creation - Example Output
+======================================================
+
+```{r, eval=TRUE}
+data <- downloadRawDataset("actors")
+head(data, 5)
+tail(data, 5)
+```
+
+
+Plans
+==============================================
+
+1. Build Separate data set for each task
+  - discrete data for association rules
+  - continuous data for clustering
+  - discrete/continuous mix for classification
+  
+2. Association rules as preparation for other tasks
+  - lower cost methods
+  - discretization of continuous attributes can provide information to tune other tasks
+
+3. Clustering and Classification tasks will build on inferences made from association rule mining
