@@ -7,9 +7,14 @@
 ready <- FALSE
 loadPackages1 <- function() {
   if( require(R.utils) == FALSE) { install.packages("R.utils") }
+  if( require(stringr) == FALSE) { install.packages("stringr") }
+  if( require(data.table) == FALSE) { install.packages("data.table") }
   ready <- TRUE
 }
 while(ready == FALSE) { ready <- loadPackages1() }
+
+#Set seed
+set.seed(7131)
 
 #Function to streamline file download and initial parsing
 #Complete list of active datasets (NOTE: this is far from all of them, and I'm not sure if all of these are even useful -Dax)
@@ -17,7 +22,7 @@ while(ready == FALSE) { ready <- loadPackages1() }
 # Example/  movies.data.raw <- downloadRawDataset("movies")
 
 # -"actors"
-# -"actresses"
+# -"actresses" 
 # -"complete-cast"
 # -"composers"
 # -"directors"
@@ -32,6 +37,7 @@ while(ready == FALSE) { ready <- loadPackages1() }
 # -"ratings"
 # -"release-dates"
 # -"running-times"
+# -"writers"
 
 downloadRawDataset <- function(choice) {
   temp <- tempfile() #Prepare space for downloading files
@@ -52,7 +58,7 @@ downloadRawDataset <- function(choice) {
   if(choice == "ratings") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/ratings.list.gz",temp) }
   if(choice == "release-dates") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/release-dates.list.gz",temp) }
   if(choice == "running-times") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/running-times.list.gz",temp) }
-  
+  if(choice == "writers") { download.file("ftp://ftp.fu-berlin.de/pub/misc/movies/database/writers.list.gz",temp) }
   rawData <- readLines(temp)
   unlink(temp)
   rawData
@@ -70,18 +76,123 @@ exploreData <- function(choice,length = 50) {
   dt
 }
 
-
-
-buildAssocRulesData <- function() {
+# Runtime: __ on 8GB of memmory
+# Parameter: size of dataset, default 10,000 movies
+#   NOTE: size must be <= size of dataset/2
+buildDataset <- function(size = 10000) {
+  
+  #
+  # MOVIES
+  #
+  
+  # Download movies information, serves as key for building rest of table
+  movies <- downloadRawDataset("movies")
+  
+  # Remove head and tail information
+  movies <- movies[16:3570077]
+  
+  # Filter episodes out of data
+  episodes <- grep("\\{",movies)
+  movies <- movies[-episodes]
+  
+  # Select random sample size, keeps data at workable size
+  dataset <- movies[sample(1:length(movies),size*2,replace=FALSE)]
+  
+  # Read dataset into tabular form, add colname, trim excess values
+  dataset <- read.delim(text = dataset,header=FALSE)
+  dataset <- dataset[,1]
+  
+  # Extract years as separate column (MESSY)
+  dataset <- do.call(rbind, str_split(dataset,' \\('))
+  dataset <- dataset[,1:2]
+  dataset[,2] <- substr(dataset[,2],1,4)
+  
+  # Set column names
+  colnames(dataset) <- c("movie","year")
+  
+  # Reset as data frame with appropriate attributes
+  dataset <- data.frame(dataset)
+  dataset$year <- as.numeric(as.character(dataset$year))
+  
+  # Filter out empty year values
+  dataset <- na.omit(dataset)
+  
+  # Reduce sample size to original requested amount
+  dataset <- dataset[1:size,]
+  
+  # Remove uneeded data
+  rm(episodes)
+  #rm(movies)
+  
+  #
+  # GENRES
+  #
+  
+  # Download genres data
+  genres <- downloadRawDataset("genres")
+  
+  # Remove head and tail information
+  genres <- genres[381:length(genres)]
+  
+  # Read dataset into tabular form, add colname, trim excess values
+  genre.set <- read.delim(text = genres,header = FALSE)
+  genre.set <- genre.set[,1]
+  
+  
+  # Reset column names
+  colnames(dataset) <- c("movie","year","genre")
+  
+  # Remove uneeded data
+  #rm(genres)
+  
+  #
+  # ACTORS
+  #
+  
+  # Download actors information
+  #actors <- downloadRawDataset("actors")
+  
+  # Remove head and tail information
+  #actors <- actors[240:18387396]
+  
+  # Read actor.set into tabular form, trim excess columns, merge
+  #actor.set <- read.delim(text = actors,header=FALSE)
+  #actorset <- actorset[,1:2]
+  #dataset <- dataset[actor.set]
+  
+  #
+  # ACTRESSES
+  #
+  
+  # Download actresses information
+  #actresses <- downloadRawDataset("actresses")
+  
+  # Remove head and tail information
+  
+  # Read actress.set into tabular form, trim excess columns, merge
+  #actress.set <- read.delim(text = actresses,header=FALSE)
+  #actress.set <- actress.set[,1:2]
+  #datset <- dataset[actress.set]
+  
+  #
+  # DIRECTORS
+  #
+  
+  # Download directors information
+  #directors <- downloadRawDataset("directors")
+  
+  # Remove head and tail information
+  #directors <- directors[238:2762469]
+  
+  # Read director.set into tabular form, trim excess columns, merge
+  
+  
+  #
+  # PRODUCERS
+  #
+  
+  #
+  # WRITERS
+  #
   
 }
-
-buildClusteringData <- function() {
-  
-}
-
-buildClassificationData <- function() {
-  
-}
-
-
