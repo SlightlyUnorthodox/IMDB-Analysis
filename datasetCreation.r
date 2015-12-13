@@ -122,7 +122,7 @@ buildDataset <- function(size = 10000) {
   
   # Remove uneeded data
   rm(episodes)
-  #rm(movies)
+  rm(movies)
   
   #
   # GENRES
@@ -134,16 +134,28 @@ buildDataset <- function(size = 10000) {
   # Remove head and tail information
   genres <- genres[381:length(genres)]
   
-  # Read dataset into tabular form, add colname, trim excess values
-  genre.set <- read.delim(text = genres,header = FALSE)
-  genre.set <- genre.set[,1]
+  # Filter noise data
+  suspended <- grep("\\{",genres)
+  genres <- genres[-suspended]
   
+  # Read dataset into tabular form, add colname, trim excess values
+  genre.set <- read.table(text=head(genres,100000))
+  genre.set[,1] <- substr(genre.set[,1],2,length(genre.set[,1]))
+  genre.set[,2] <- substr(genre.set[,2],2,5)
+  #genre.set <- genre.set[,c(1,3)]
   
   # Reset column names
-  colnames(dataset) <- c("movie","year","genre")
+  colnames(genre.set) <- c("movie","year","genre")
+  
+  # Reset as data frame with appropriate attributes
+  genre.set <- data.frame(genre.set)
+  genre.set$year <- as.numeric(as.character(genre.set$year))
+  
+  # Filter out empty year values
+  genre.set <- na.omit(genre.set)
   
   # Remove uneeded data
-  #rm(genres)
+  rm(genres)
   
   #
   # ACTORS

@@ -784,7 +784,7 @@ CIS 4930 Fall 2015: Data Minining
   <div class="slides">
 
 <section data-state="section" data-transition="linear" data-transition-speed="default">
-<h1>Final Project Roadmap</h1><p>Dax Gerts, Christine Moore, Carl Amko, Denzel Mathew<br/>December 2nd &amp; 4th, 2015</p>
+<h1>Final Project Roadmap</h1><p>Dax Gerts, Christine Moore, Carl Amko, Denzel Mathew, Aaron Silcott<br/>December 2nd &amp; 4th, 2015</p>
 
 <div class="slideContent" >
 
@@ -848,7 +848,8 @@ rawData
 <section data-transition="linear" data-transition-speed="default">
 <h3>1. Dataset Creation - Helper Functions (cont.)</h3>
 <div class="slideContent" >
-<pre><code class="r">exploreData &lt;- function(choice,length = 50) {
+<pre><code class="r">while(ready == FALSE) { ready &lt;- loadPackages1() }
+exploreData &lt;- function(choice,length = 50) {
   dt &lt;- downloadRawDataset(choice)
   print(head(dt,length))
   cat(&quot;Press [enter] to continue&quot;)
@@ -856,6 +857,27 @@ rawData
   print(tail(dt,length))
   dt
 }
+</code></pre>
+
+</div>
+
+</section>
+<section data-transition="linear" data-transition-speed="default">
+<h3>1. Dataset Creation - Example Output</h3>
+<div class="slideContent" >
+<pre><code class="r">head(downloadRawDataset(&quot;genres&quot;),10)
+</code></pre>
+
+<pre><code> [1] &quot;CRC: 0xB58E2C9A  File: genres.list  Date: Fri Nov 27 00:00:00 2015&quot;           
+ [2] &quot;&quot;                                                                             
+ [3] &quot;-----------------------------------------------------------------------------&quot;
+ [4] &quot;&quot;                                                                             
+ [5] &quot;                            This is the Genres List&quot;                          
+ [6] &quot;&quot;                                                                             
+ [7] &quot;            Maintained by: Jake Dias &lt;genres@imdb.com&gt;&quot;                       
+ [8] &quot;&quot;                                                                             
+ [9] &quot;-----------------------------------------------------------------------------&quot;
+[10] &quot;&quot;                                                                             
 </code></pre>
 
 </div>
