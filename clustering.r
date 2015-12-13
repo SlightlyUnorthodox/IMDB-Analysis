@@ -11,8 +11,28 @@ loadPackages2 <- function() {
 }
 while(ready == FALSE) { ready <- loadPackages2() }
 
-#Source dataset creation tools/loads base libraries
-source("datasetCreation.r")
+# Load dataset/subset dataset
+#
+#
+#
+#
 
-#Build optimized clustering data
-buildClusteringData()
+
+# Go forth and find similar movies
+#
+#
+#
+#
+#
+#
+
+
+
+
+
+
+# Questions
+
+# Which clustering method works best in this case? And why.
+
+# Would clustering the movies into k' clusters where k' > k help in better categorization? And how.
