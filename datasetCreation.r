@@ -9,6 +9,7 @@ loadPackages1 <- function() {
   if( require(R.utils) == FALSE) { install.packages("R.utils") }
   if( require(stringr) == FALSE) { install.packages("stringr") }
   if( require(data.table) == FALSE) { install.packages("data.table") }
+  if( require(jsonlite) == FALSE) { install.packages("jsonlite") }
   ready <- TRUE
 }
 while(ready == FALSE) { ready <- loadPackages1() }
@@ -208,3 +209,95 @@ buildDataset <- function(size = 10000) {
   #
   
 }
+
+# Reformat OMDB JSON queries as csv
+jsonToCsv <- function(filename = "imdb_30K_sample.json",write=TRUE,csvfile = "imdb_30K_sample.csv") {
+  data <- fromJSON(txt=as.character(filename))
+  if(write==TRUE) {
+    write.csv(data,file=csvfile,row.names = FALSE)
+  }
+  data
+}
+
+# Clean data set, set proper types, drop invalid rows, 
+preprocessing <- function(data) {
+  # Step 1: Variable type checking
+  
+  # 1.1 Plot - char (fine as is)
+  # 1.2 Rated - factor (49 levels) (sparse)
+  data$Rated <- as.factor(data$Rated)
+  summary(data$Rated)
+  
+  # 1.3 Title - char (fine as is)
+  
+  # 1.4 Writer - factor (>10000 levels)
+  data$Writer <- as.factor(data$Writer)
+  summary(data$Writer)
+  
+  # 1.5 Actors - list (will require more processing later)
+  data$Actors <- strsplit(data$Actors,", ")
+  data$Actors <- sapply(data$Actors,'[',seq(max(sapply(data$Actors,length))),simplify=FALSE)
+  data$Actors[1:5]
+
+  # 1.6 Type - factor
+  data$Type <- as.factor(data$Type)
+  summary(data$Type)
+
+  # 1.7 imdbVotes - numeric
+  data$imdbVotes <- as.numeric(data$imdbVotes)
+  summary(data$imdbVotes)
+  
+  # 1.8 seriesID - char (fine as is)
+
+  # 1.9 Season
+  data$Season <- as.numeric(data$Season)
+  summary(data$Season)
+  
+  # 1.10 Director - factor (> 10000 levels)
+  data$Director <- as.factor(data$Director)
+  levels(data$Director)
+  
+  # 1.11 Released - date 
+  data$Released <- as.Date(data$Released,"%d %b %Y")
+  
+  # 1.12 Awards - to finicky to do anything with now (parse for numeric values later, maybe)
+  
+  # 1.13 Genre - fact list
+  data$Genre <- strsplit(data$Genre,", ")
+  data$Genre <- sapply(data$Genre,'[',seq(max(sapply(data$Genre,length))),simplify=FALSE)
+  data$Genre[1:5]
+  
+  # 1.14 imdbRating - numeric
+  data$imdbRating <- as.numeric(data$imdbRating)
+  
+  # 1.15 Poster - char (fine as is)
+  
+  # 1.16 Episode - numeric
+  data$Episode <- as.numeric(data$Episode)
+  
+  # 1.17 Language - factor list
+  data$Language <- strsplit(data$Language,", ")
+  data$Language <- sapply(data$Language,'[',seq(max(sapply(data$Language,length))),simplify=FALSE)
+  data$Language[1:5]
+  
+  # 1.18 Country
+  data$Country <- strsplit(data$Country,", ")
+  data$Country <- sapply(data$Country,'[',seq(max(sapply(data$Country,length))),simplify=FALSE)
+  data$Country[1:5]
+  
+  # 1.19 Runtime (unfinished)
+  data$Runtime <- gsub("[^0-9]"," ",data$Runtime)
+  
+  
+  # 1.20 imdbID
+  # 1.21 Metascore
+  # 1.22 Response
+  # 1.23 Year - as numeric (only takes first year in range)
+  data$Year <- as.numeric(gsub("\\-.*","",data$Year))
+  summary(data$Year)
+  
+  # 1.24 Error (fine as is, meaningless)
+
+}
+
+
