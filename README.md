@@ -1,6 +1,11 @@
 # IMDB-Analysis
 Group Project for Fall section of UF CIS4930 Data Mining
 
+# Final Report
+
+* [Slides](http://slightlyunorthodox.github.io/IMDB-Analysis/)
+* [PDF](https://github.com/SlightlyUnorthodox/IMDB-Analysis/blob/master/CIS4930GroupProjectReport.pdf)
+
 # Roadmap Presentation
 Viewable [here](http://htmlpreview.github.io/?https://github.com/SlightlyUnorthodox/IMDB-Analysis/blob/master/roadmap.html)
 
