@@ -210,6 +210,19 @@ buildDataset <- function(size = 10000) {
   
 }
 
+# Runtime reformat, string -> minutes (integer)
+timeSet <- function(x) {
+  if(length(x == 2)) {
+    x = as.numeric(x) 
+  } else if (length(x == 4))  {
+    x = (as.numeric(substr(x,1,1))*60)+as.numeric(substr(x,2,3))
+  } else {
+    x = as.numeric("0")
+  }
+  x
+}
+
+
 # Reformat OMDB JSON queries as csv
 jsonToCsv <- function(filename = "imdb_30K_sample.json",write=TRUE,csvfile = "imdb_30K_sample.csv") {
   data <- fromJSON(txt=as.character(filename))
@@ -287,17 +300,36 @@ preprocessing <- function(data) {
   
   # 1.19 Runtime (unfinished)
   data$Runtime <- gsub("[^0-9]"," ",data$Runtime)
+  for(i in 1:length(data$Runtime)) {
+    data$Runtime[i] = timeSet(data$Runtime[i])
+  }
+  data$Runtime <- as.numeric(data$Runtime)
+  summary(data$Runtime)
   
+  # 1.20 imdbID (fine as is)
   
-  # 1.20 imdbID
   # 1.21 Metascore
-  # 1.22 Response
+  data$Metascore <- as.factor(data$Metascore)
+  levels(data$Metascore)
+  
+  # 1.22 Response (irrelevant)
+  
   # 1.23 Year - as numeric (only takes first year in range)
   data$Year <- as.numeric(gsub("\\-.*","",data$Year))
   summary(data$Year)
   
   # 1.24 Error (fine as is, meaningless)
-
+  
+  # 2 Prepare valid data
+  
+  # 2.1 Drop
+  data <- data[data$Type == "movie",]
+  
+  # 2.2 Save table as R object
+  saveRDS(data,"clean10Kdataset.rds")
+  
+  # 2.3 Return output table
+  data
 }
 
 
