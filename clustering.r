@@ -11,11 +11,27 @@ loadPackages2 <- function() {
 }
 while(ready == FALSE) { ready <- loadPackages2() }
 
-# Load dataset/subset dataset
-#
-#
-#
-#
+# Load dataset
+data <- readRDS("clean10Kdataset.rds")
+
+#subset dataset to Genre list
+dataGenre <- data[, 13]
+
+#Prune the data to remove excess collection space
+dataPruned <- lapply(dataGenre, function(x) {
+  # Make the collection 'unique', removing all the blank collection spots
+  x <- unique(x)
+  
+  # chop off the last 'NA' value
+  x <- x[-length(x)]
+  
+})
+
+# attempt to transform each unique entry with an id
+dataPruned <- transform(dataGenre, id=seq_len(length(unique(dataGenre))))
+
+# count unique genres
+length(unique(dataPruned))
 
 
 # Go forth and find similar movies
