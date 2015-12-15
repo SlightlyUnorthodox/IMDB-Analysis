@@ -261,7 +261,7 @@ preprocessing <- function(data) {
   summary(data$imdbVotes)
   
   # 1.8 seriesID - char (fine as is)
-
+  
   # 1.9 Season
   data$Season <- as.numeric(data$Season)
   summary(data$Season)
@@ -322,13 +322,16 @@ preprocessing <- function(data) {
   
   # 2 Prepare valid data
   
-  # 2.1 Drop
+  # 2.1 Drop non-movie entries
   data <- data[data$Type == "movie",]
   
-  # 2.2 Save table as R object
+  # 2.2 Drop bad/"N/A" entries
+  data <- data[!(is.na(as.factor(data$Title))),]
+  
+  # 2.3 Save table as R object
   saveRDS(data,"clean10Kdataset.rds")
   
-  # 2.3 Return output table
+  # 2.4 Return output table
   data
 }
 
