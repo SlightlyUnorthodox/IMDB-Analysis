@@ -6,6 +6,19 @@ Viewable [here](http://htmlpreview.github.io/?https://github.com/SlightlyUnortho
 
 # Notes (Most recent first)
 
+(Dax) Load working dataset with the following code with file *clean10Kdataset.rds* in working directory
+
+```{r}
+readRDS("clean10Kdataset.rds")
+```
+
+Or build directly from the json file with the following (source functions),
+
+```{r}
+data <- jsonToCsv()
+data <- preprocessing(data) #Writes clean10Kdataset.rds file
+```
+
 (Dax) I've been working out some of the kinks in getting ahold of the data so that we can spend minimal time on data cleaning. Hopefully the comments are enough to explain what's going on, if not feel free to message me whenever. Here's an overview,
   
 * Files provided by IMDB (site linked below) are in a weird format ".list.gz"
@@ -22,6 +35,13 @@ Viewable [here](http://htmlpreview.github.io/?https://github.com/SlightlyUnortho
 
 # Methods of Interest
 
-# References
+# References & Resources
 
-* IMDB Database: ftp://ftp.fu-berlin.de/pub/misc/movies/database/
+The Internet Movie Database
+[http://www.imdb.com](IMDb)
+
+IMDbPY - Python API and Materials for IMDB searches
+[http://www.imdbpy.sourceforge.net](IMDbPY & imdbpy2sql.py)
+
+The Open Movie Database
+[http://www.omdbapi.com/](OMDb API)
