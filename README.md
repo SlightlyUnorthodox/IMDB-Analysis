@@ -24,6 +24,16 @@ data <- jsonToCsv()
 data <- preprocessing(data) #Writes clean10Kdataset.rds file
 ```
 
+(Christine) To remove parenthesized notes by data like in the attribute 'Writer', run this function
+```{r}
+noParentheses <- lapply(movieData$Writer, function(x) {
+    gsub( " *\\(.*?\\) *", "", x)
+})
+
+movieData$Writer <- noParentheses
+```
+where movieData is the data you read in from the readRDS call 
+
 (Dax) I've been working out some of the kinks in getting ahold of the data so that we can spend minimal time on data cleaning. Hopefully the comments are enough to explain what's going on, if not feel free to message me whenever. Here's an overview,
   
 * Files provided by IMDB (site linked below) are in a weird format ".list.gz"
