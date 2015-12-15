@@ -51,7 +51,7 @@ movieData <- movieData[,-10]
 movieData <- movieData[,-10]
 movieData <- movieData[,-11]
 
-movieDataWOutGenre <- movieData[,-6]
+
 # now are datasets contain only the important variables pertinent to classification
 # episodes taken about because all values are N/A for this dataset
 
@@ -64,6 +64,8 @@ noParentheses <- lapply(movieData$Writer, function(x) {
   })
 
 movieData$Writer <- noParentheses
+
+
 
 createTestMovieSet <- function(dataset,classifier) {
   #set seed, said first digits of UF ID so i used the first 4
@@ -89,6 +91,13 @@ createTrainingMovieSet <- function(dataset,classifier) {
 #setting variables for the train and test sets
 testDataMovie = createTestMovieSet(movieData, movieData$Genre)
 trainingDataMovie = createTrainingMovieSet(movieData, movieData$Genre)
+
+############################ TO DOS ##################################
+#once testData is successfully created, need to go in and change -6 to appropriate value to create test data 
+#that does not contain attribute genre to replace in the predict methods below where you see testDataMovie[,1:4]
+
+movieDataWOutGenre <- movieData[,-6]
+movieDataWOutGenre$Writer <- noParentheses
 
 
 #RIPPER CLASSIFIER
