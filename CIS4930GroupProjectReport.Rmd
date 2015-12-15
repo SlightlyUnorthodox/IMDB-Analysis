@@ -11,11 +11,43 @@ The following report details the
 
 # Literature Review
 
-  W
+W
 
 # Overview of Data
 
-Our working dataset was created using a python script making calls to the OMDb API.
+The data overview is divided into the following steps, as significant decisions or observations worth explaining were made at each point.
+
+* Building the dataset
+* Preprocessing
+* Datset Statistics
+
+The packages and required workspace prepartion steps are listed below for reproducibility purposes.
+
+```{r eval=TRUE}
+#Dynamically load/install required packages
+ready <- FALSE
+loadPackages1 <- function() {
+  if( require(R.utils) == FALSE) { install.packages("R.utils") }
+  if( require(stringr) == FALSE) { install.packages("stringr") }
+  if( require(data.table) == FALSE) { install.packages("data.table") }
+  if( require(jsonlite) == FALSE) { install.packages("jsonlite") }
+  ready <- TRUE
+}
+while(ready == FALSE) { ready <- loadPackages1() }
+
+#Set seed
+set.seed(7131)
+```
+
+## Building the Dataset
+
+Our working dataset was created using a python script making calls to the OMDb API. While this method was slow, completing approximately 3-5 http requests per second on an average wifi connection, it saved an enormous amount of time in preprocessing and fine-tuning as it loads all the available, useful information as JSON objects which can be read into R efficiently and cheaply.
+
+As seen below, the *imdbscraper.py* script was set to a sample size of 30 thousand values (for reasons explained later) and made a unique http request for each randomly generated seven-digit id up to the approximate maximum of 5262000. Each request return a json object which was stored in an array of sample size.
+
+Once the specified number of requests were made, the json array was dumped and written to a file.
+
+Note that although the dataset is created from OMBb's 3rd-party API, each request contains an IMDb ID corresponding to the same values in the IMDb database.
 
 ```{r eval=FALSE}
 ## Title: IMDB sample database creator
@@ -47,14 +79,23 @@ with codecs.open('imdb_re_30k_sample.txt','w','utf8') as f:
 
 ```
 
+## Preprocessing
 
 # Method and Materials
 
+
+
 # Results
+
+
 
 # Discussion
 
+
+
 # Conclusion
+
+
 
 # References & Resources
 
