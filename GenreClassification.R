@@ -58,6 +58,27 @@ movieData <- movieData[,-11]
 #maybe need to use lapply we'll see
 #Retail_data[] <- lapply(Retail_data, factor)
 
+#country is going to be cut down to 2 items per list
+twoCountries <- lapply(movieData$Country, function(x) {
+  x <- x[1:2]
+})
+
+movieData$Country <- twoCountries
+
+# Language is going to be cut down to 2 items as well
+twoLanguages <- lapply(movieData$Language, function(x){
+  x <- x[1:2]
+})
+
+movieData$Language <- twoLanguages
+
+# Cut genre down to 3 items
+threeGenres <- lapply(movieData$Genre, function(x){
+  x <- x[1:3]
+})
+
+movieData$Genre <- threeGenres
+
 
 noParentheses <- lapply(movieData$Writer, function(x) {
   gsub( " *\\(.*?\\) *", "", x)
