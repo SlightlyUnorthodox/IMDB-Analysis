@@ -7,7 +7,7 @@ output: pdf_document
 
 # Introduction
 
-The following report details the procedures and research done to carry out data mining tasks on a sample(s) of the Internet Movie Database (IMDb) and its collection of movies. These procedures were broken into the following major categories:
+The following report details the research and procedures done to carry out data mining tasks on a reasonable sample of the Internet Movie Database (IMDb) and its collection of movies. These procedures were broken into the following major categories:
 
 * Dataset Creation
 * Genre prediction (classification) 
@@ -47,7 +47,21 @@ set.seed(7131)
 
 ## Building the Dataset
 
-Our working dataset was created using a python script making calls to the OMDb API. While this method was slow, completing approximately 3-5 http requests per second on an average wifi connection, it saved an enormous amount of time in preprocessing and fine-tuning as it loads all the available, useful information as JSON objects which can be read into R efficiently and cheaply.
+Numerous efforts were carried out to build a work sample set for this project, and while an exhaustive amount of detail could be provided for each attempted method, only a brief overview of each attempt will be given before providing a more lengthy explanation of the methods that were finally chosen.
+
+**Round One**: Load flat files from FTP server directly into R
+  * Efforts: Several helper functions were written to load IMDb files into R, parse first as Raw Text, and clean. Attempts were then made to join the contents of each file into complete working set before sampling.
+  * Cons: The files were too large to effectively load and clean in R. While a sample could be taken from the *movies* file fairly easily, each attribute joined would require traversal and cleaning of approximately 0.5 GB of raw text.
+
+**Round Two**: Reconstruct data in mySQL database using IMDb's *imdbpy2sql.py* program
+  * Efforts: Multiple attempts were made to fully reconstruct the IMDb database from flat files. Once the script would complete running, the finished database was either queried for existing tables or backed up to csv files.
+  * Cons: Each attempt to either provide a sample set from mySQL query or from performing a sqldump to csv files showed that the movie IDs were missing, rendering the data useless.
+
+**Round Three**: Python Script and Web APIs
+  * Efforts: Employ python scripts and API calls to the Internet Movie Database and the Open Movie Database.
+  * Cons: Very slow (internet connection-bound)
+
+Our working dataset was created using a python script making calls to the OMDb API. While this method was slow, completing approximately 3-5 http requests per second on an average wifi connection, it saved an enormous amount of time in preprocessing and fine-tuning as it loaded all the available, useful information as JSON objects which could be read into R efficiently and cheaply.
 
 As seen below, the *imdbscraper.py* script was set to a sample size of 30 thousand values (for reasons explained later) and made a unique http request for each randomly generated seven-digit id up to the approximate maximum of 5262000. Each request return a json object which was stored in an array of sample size.
 
@@ -58,7 +72,6 @@ Note that although the dataset is created from OMBb's 3rd-party API, each reques
 ```{r eval=FALSE}
 ## Title: IMDB sample database creator
 ## Author: Dax Gerts
-## Date: 14 December 2016
 ## Description: use OMDb API to rapidly build a clean JSON IMDb data sample
 
 import requests
@@ -68,21 +81,108 @@ import urllib2
 import csv
 import codecs
 
+# Set sample size
 sample_size = 30000
 
+# Generate random ids
 random_ids = np.random.choice(5262000,size=sample_size,replace=False)
 
+# Generate empty list-space for results
 data = [None] * sample_size
 
+# For each id, query OMDb API and retrieve JSON object
 for i in range(sample_size):
 	temp_id = "%07d" % random_ids[i]
 	data[i] = json.load(urllib2.urlopen('http://www.omdbapi.com/?i=tt' + 
                                         temp_id + '&plot=short&r=json'))
 	print("QUERY#"+str(i))
 
+# Dump all JSON objects in list to single object, write to file
 with codecs.open('imdb_re_30k_sample.txt','w','utf8') as f:
 	json.dump(data, f)
+```
 
+It was discovered further on in the process on building the sample set that the Open Movie Database was missing a number of values from the IMDb database. To rectify this, another python script was written using a list of the subset of IMDb movie IDs selected in preprocessing. The script used the IMDbPy API to return additional cast items: *Producer*, *Cinematographer*, *Composer*, and *CostumeDesigners*.
+
+```{r eval=FALSE}
+## Title: IMDB sample database creator
+## Author: Dax Gerts
+
+import imdb
+import csv
+import re
+import csv
+
+# Create IMDB API object
+ia = imdb.IMDb()
+
+# Read pre-genereated list of sample IMDbIDs
+with open("clean10Kimdbids.csv") as f:
+  reader = csv.reader(f)
+	ids = map(tuple, reader)
+
+# Open output file and begin writing results
+with open('imdb_10K_cast_plus.csv','wb') as csvfile:
+	idwriter = csv.writer(csvfile, delimiter=',')
+	
+  # Traverse list of ids
+	for i in range(1,len(ids)):
+		#Assign temp string
+		temp = str(ids[i])
+
+		#Use regex to cut off ends of temp string
+		temp = re.sub('\'\,\)$','',temp)
+		temp = re.sub('\(\'tt','',temp)
+		print(temp)
+
+		#Identify movie by id
+		movie = ia.get_movie(temp)
+
+		#Attemp to retrieve producer list
+		try:
+			#Read producer as string
+			producer = str(movie['producer'])
+
+			#Repeatedly extract inline names
+			producer = re.findall('_(.+?)_>',producer)
+
+		except KeyError:
+			#Fail to read producer, write "NA"
+			producer = "NA"
+	
+		try:
+			#Read cinema__ as string
+			cinema = str(movie['cinematographer'])
+
+			#Repeatedly extract inline names
+			cinema = re.findall('_(.+?)_>',cinema)
+
+		except KeyError:
+			#Fail to read, write "NA"
+			cinema = "NA"
+
+		try:
+			#Read composers as string
+			composer = str(movie['composer'])
+
+			#Repeatedly read inline names
+			composer = re.findall('_(.+?_>',composer)
+		except KeyError:
+			#Fail to read, write "NA"
+			composer = "NA"
+
+		try:
+			#Read costume-designer as tring
+			costume = str(movie['costume-designer'])	
+
+			#Repeatedly read inline names
+			costume = re.findall('_(.+?_>',costume)
+		except KeyError:
+			#Fail to read, write "NA"
+			costume = "NA"
+
+		#Write producer string to file
+		idwriter.writerow([temp,producer,cinema,composer,costume])
 ```
 
 ## Preprocessing

@@ -10,6 +10,7 @@ loadPackages1 <- function() {
   if( require(stringr) == FALSE) { install.packages("stringr") }
   if( require(data.table) == FALSE) { install.packages("data.table") }
   if( require(jsonlite) == FALSE) { install.packages("jsonlite") }
+  if( require(plyr) == FALSE) { install.packages("dplyr")}
   ready <- TRUE
 }
 while(ready == FALSE) { ready <- loadPackages1() }
@@ -252,6 +253,44 @@ preprocessing <- function(data) {
   data$Actors <- sapply(data$Actors,'[',seq(max(sapply(data$Actors,length))),simplify=FALSE)
   data$Actors[1:5]
 
+  ### BEGIN ACTORS FIX
+  
+  #Split actors to temp unique columns
+  temp<- ldply(data$Actors)
+  colnames(temp) <- c('Actor1','Actor2','Actor3','Actor4')
+  
+  #Reassign actors
+  data$Actor1 <- temp[1]
+  data$Actor2 <- temp[2]
+  data$Actor3 <- temp[3]
+  data$Actor4 <- temp[4]
+  
+  #Delete temporary data frame
+  rm(temp)
+  
+  #Drop defunct actors column
+  data <- data[,-c(5)]
+  
+  data$Writer <- as.factor(data$Writer)
+  data$Director <- as.factor(data$Director)
+  
+  data$Director[data$Director=="N/A"] <- NA
+  data$Writer[data$Writer=="N/A"] <- NA
+  
+  #Catch alternate NAs
+  data$Actor1[data$Actor1=="N/A"] <- NA
+  data$Actor2[data$Actor2=="N/A"] <- NA
+  data$Actor3[data$Actor3=="N/A"] <- NA
+  data$Actor4[data$Actor4=="N/A"] <- NA
+  
+  #Unlist and set actors as factors
+  data$Actor1 <- as.factor(unlist(data$Actor1))
+  data$Actor2 <- as.factor(unlist(data$Actor2))
+  data$Actor3 <- as.factor(unlist(data$Actor3))
+  data$Actor4 <- as.factor(unlist(data$Actor4))
+  
+  ### END ACTORS FIX
+  
   # 1.6 Type - factor
   data$Type <- as.factor(data$Type)
   summary(data$Type)

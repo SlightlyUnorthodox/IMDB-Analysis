@@ -14,13 +14,6 @@ with open("clean10Kimdbids.csv") as f:
 	reader = csv.reader(f)
 	ids = map(tuple, reader)
 
-
-i = 1
-temp = str(ids[i])
-
-temp = re.sub('\'\,\)$','',temp)
-temp = re.sub('\(\'','',temp)
-
 with open('imdb_10K_cast_plus.csv','wb') as csvfile:
 	idwriter = csv.writer(csvfile, delimiter=',')
 	#for i in 1:len(ids):
