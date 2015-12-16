@@ -55,6 +55,7 @@ makeSet <- function(x){
   x$Music <- 0
   x$Musical <- 0
   x$Mystery <- 0
+  x$None <- 0
   x$News <- 0
   x$RealityTV <- 0
   x$Romance <- 0
@@ -133,6 +134,9 @@ makeSet <- function(x){
       if (coll[[1]][j] == "Mystery"){
         x[i,"Mystery "] = value
       }
+      if (coll[[1]][j] == "N/A"){
+        x[i,"None"] = value
+      }
       if (coll[[1]][j] == "News"){
         x[i,"News "] = value
       }
@@ -165,13 +169,13 @@ makeSet <- function(x){
       }
     }
   }
-  y <- x [,c("Action", "Adventure", "Adult", "Animation", "Biography", "Comedy", "Crime", "Documentary", "Drama", "Family", "Fantasy", "FilmNoir","GameShow" ,"History", "Horror", "Music", "Musical", "Mystery", "News","RealityTV","Romance", "SciFi", "Sport", "Short", "TalkShow", "Thriller", "War", "Western")]
+  y <- x [,c("Action", "Adventure", "Adult", "Animation", "Biography", "Comedy", "Crime", "Documentary", "Drama", "Family", "Fantasy", "FilmNoir","GameShow" ,"History", "Horror", "Music", "Musical", "Mystery", "None","News","RealityTV","Romance", "SciFi", "Sport", "Short", "TalkShow", "Thriller", "War", "Western")]
   return (y)
 }
 distanceMatrix <- makeSet(data)
 
-# kmean cluster with k = 28 clusters (genres)
-kmeanCluster <- kmeans(distanceMatrix, 28)
+# kmean cluster with k = 29 clusters (genres)
+kmeanCluster <- kmeans(distanceMatrix, 29)
 
 # append cluster number result to matrix
 distanceMatrix$cluster <- as.factor(kmeanCluster$cluster)
