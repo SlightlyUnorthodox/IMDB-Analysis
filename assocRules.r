@@ -4,41 +4,46 @@
 # Description: Procedure for detecting "usual casts" (association rule mining)
 
 #Dynamically load/install required packages
-ready <- FALSE
-loadPackages4 <- function() {
-  if( require(R.utils) == FALSE) { install.packages("R.utils") }
-  
-  ready <- TRUE
-}
-while(ready == FALSE) { ready <- loadPackages4() }
+library(arules)
+library(reshape2)
+library(stringr)
 
 # Load dataset/subset dataset
-#
-#
-# Must contain (directors,authors/writers,producers/actors,actresses,etc.)
-#
+assocData <- readRDS("clean10Kdataset.rds")
+
+# Remove columns not worthy of analysis
+assocDataSubset <- assocData[,c(4,5,10)]
+assocDataSubset$Writer <- as.factor(assocDataSubset$Writer)
+assocDataSubset$Director <- as.factor(assocDataSubset$Director)
+assocDataSubset$Actors <- colsplit(assocDataSubset$Actors, ",", names=c('Actor1','Actor2','Actor3','Actor4'))
+assocDataSubset$Actor1 <- assocDataSubset$Actors$Actor1
+assocDataSubset$Actor2 <- assocDataSubset$Actors$Actor2
+assocDataSubset$Actor3 <- assocDataSubset$Actors$Actor3
+assocDataSubset$Actor4 <- assocDataSubset$Actors$Actor4
+
+assocDataSubset$Actors <- NULL
+
+assocDataSubset$Actor1 <- gsub('^c\\(','',assocDataSubset$Actor1)
+assocDataSubset$Actor4 <- gsub('\\)\\s*$','',assocDataSubset$Actor4)
+
+assocDataSubset$Actor1 <- as.character(assocDataSubset$Actor1)
+assocDataSubset$Actor2 <- as.character(assocDataSubset$Actor2)
+assocDataSubset$Actor3 <- as.character(assocDataSubset$Actor3)
+assocDataSubset$Actor4 <- as.character(assocDataSubset$Actor4)
+
+# assocDataSubset$Actor1 <- as.factor(assocDataSubset$Actor1)
+# assocDataSubset$Actor2 <- as.factor(assocDataSubset$Actor2)
+# assocDataSubset$Actor3 <- as.factor(assocDataSubset$Actor3)
+# assocDataSubset$Actor4 <- as.factor(assocDataSubset$Actor4)
+
+assocDataSubset$Director[assocDataSubset$Director=="N/A"] <- NA
+assocDataSubset$Writer[assocDataSubset$Writer=="N/A"] <- NA
+
+assocDataSubset$Actor1[assocDataSubset$Actor1=="N/A"] <- NA
+assocDataSubset$Actor2[assocDataSubset$Actor2=="N/A"] <- NA
+assocDataSubset$Actor3[assocDataSubset$Actor3=="N/A"] <- NA
+assocDataSubset$Actor4[assocDataSubset$Actor4=="N/A"] <- NA
 
 
-
-# Go forth and find interesting rules
-#
-#
-#
-#
-#
-#
-
-
-# Results for this part depend on...
-
-# The number of different roles you have in your dataset.
-
-# What you put in the left-hand-side of the rules.
-
-# How you would automatically check all the possibilities.
-
-# Moreover, provide some rules which indicate the relation between genre and the cast. You
-#should explain why this finding is aligned (or not) with your results for the genre prediction
-#part.
 
 
