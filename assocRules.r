@@ -50,15 +50,22 @@ assocDataSubset$Actor1 <- as.factor(assocDataSubset$Actor2)
 assocDataSubset$Director[assocDataSubset$Director=="N/A"] <- NA
 assocDataSubset$Writer[assocDataSubset$Writer=="N/A"] <- NA
 
+#Catch alternate NAs
 assocDataSubset$Actor1[assocDataSubset$Actor1=="N/A"] <- NA
 assocDataSubset$Actor2[assocDataSubset$Actor2=="N/A"] <- NA
 assocDataSubset$Actor3[assocDataSubset$Actor3=="N/A"] <- NA
 assocDataSubset$Actor4[assocDataSubset$Actor4=="N/A"] <- NA
 
-sapply(unlist(assocDataSubset$Actor1, recursive = TRUE, use.names = TRUE))
-sapply(unlist(assocDataSubset$Actor2, recursive = TRUE, use.names = TRUE))
-sapply(unlist(assocDataSubset$Actor3, recursive = TRUE, use.names = TRUE))
-sapply(unlist(assocDataSubset$Actor4, recursive = TRUE, use.names = TRUE))
+#Unlist and set actors as factors
+assocDataSubset$Actor1 <- as.factor(unlist(assocDataSubset$Actor1))
+assocDataSubset$Actor2 <- as.factor(unlist(assocDataSubset$Actor2))
+assocDataSubset$Actor3 <- as.factor(unlist(assocDataSubset$Actor3))
+assocDataSubset$Actor4 <- as.factor(unlist(assocDataSubset$Actor4))
+
+#sapply(unlist(assocDataSubset$Actor1, recursive = TRUE, use.names = TRUE))
+#sapply(unlist(assocDataSubset$Actor2, recursive = TRUE, use.names = TRUE))
+#sapply(unlist(assocDataSubset$Actor3, recursive = TRUE, use.names = TRUE))
+#sapply(unlist(assocDataSubset$Actor4, recursive = TRUE, use.names = TRUE))
 
 
 dataFiltered <- apriori(assocDataSubset, support=0.1, confidence= 0.2)
