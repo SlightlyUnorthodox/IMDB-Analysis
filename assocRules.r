@@ -1,5 +1,5 @@
 # Project: CIS4930 Group Project
-# Authors: Dax Gerts, ...
+# Authors: Dax Gerts, Denzel
 # Date: 23 November 2015
 # Description: Procedure for detecting "usual casts" (association rule mining)
 
@@ -8,33 +8,50 @@ source('datasetCreation.r')
 
 #Dynamically load/install required packages
 
-library(arules)
-library(reshape2)
-library(stringr)
+ready <- FALSE
+loadPackages3 <- function() {
+  if( require(arules) == FALSE) { install.packages("arules") }
+  if( require(reshape2) == FALSE) { install.packages("reshape2") }
+  if( require(stringr) == FALSE) { install.packages("stringr") }
+  if( require(dplyr) == FALSE) { install.packages("dplyr")}
+  ready <- TRUE
+}
+while(ready == FALSE) { ready <- loadPackages3() }
+
+set.seed(7131)
 
 # Load dataset/subset dataset
 assocData <- readRDS("clean10Kdataset.rds")
 
-
 # Remove columns not worthy of analysis
 assocDataSubset <- assocData[,c(4,5,10)]
+
+#Split actors to temp unique columns
+temp<- ldply(assocDataSubset$Actors)
+colnames(temp) <- c('Actor1','Actor2','Actor3','Actor4')
+
+#Reassign actors
+assocDataSubset$Actor1 <- temp[1]
+assocDataSubset$Actor2 <- temp[2]
+assocDataSubset$Actor3 <- temp[3]
+assocDataSubset$Actor4 <- temp[4]
+
+#Delete temporary data frame
+rm(temp)
+
+#Drop defunct actors column
+assocDataSubset <- assocDataSubset[,-c(2)]
+
 assocDataSubset$Writer <- as.factor(assocDataSubset$Writer)
 assocDataSubset$Director <- as.factor(assocDataSubset$Director)
-assocDataSubset$Actors <- colsplit(assocDataSubset$Actors, ",", names=c('Actor1','Actor2','Actor3','Actor4'))
-assocDataSubset$Actor1 <- assocDataSubset$Actors$Actor1
-assocDataSubset$Actor2 <- assocDataSubset$Actors$Actor2
-assocDataSubset$Actor3 <- assocDataSubset$Actors$Actor3
-assocDataSubset$Actor4 <- assocDataSubset$Actors$Actor4
 
-assocDataSubset$Actors <- NULL
+#assocDataSubset$Actor1 <- gsub('^c\\(','',assocDataSubset$Actor1)
+#assocDataSubset$Actor4 <- gsub('\\)\\s*$','',assocDataSubset$Actor4)
 
-assocDataSubset$Actor1 <- gsub('^c\\(','',assocDataSubset$Actor1)
-assocDataSubset$Actor4 <- gsub('\\)\\s*$','',assocDataSubset$Actor4)
-
-assocDataSubset$Actor1 <- as.character(assocDataSubset$Actor1)
-assocDataSubset$Actor2 <- as.character(assocDataSubset$Actor2)
-assocDataSubset$Actor3 <- as.character(assocDataSubset$Actor3)
-assocDataSubset$Actor4 <- as.character(assocDataSubset$Actor4)
+#assocDataSubset$Actor1 <- as.character(assocDataSubset$Actor1)
+#assocDataSubset$Actor2 <- as.character(assocDataSubset$Actor2)
+#assocDataSubset$Actor3 <- as.character(assocDataSubset$Actor3)
+#assocDataSubset$Actor4 <- as.character(assocDataSubset$Actor4)
 
 
 # assocDataSubset$Actor1 <- as.factor(assocDataSubset$Actor1)
