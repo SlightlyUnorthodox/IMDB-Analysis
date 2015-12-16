@@ -16,6 +16,14 @@ The following report details the research and procedures designed to carry out d
 
 # Literature Review
 
+Source No. 1 
+'Automatic Video Classification: A Survey of the Literature' by Darin Brezeale and Diane J. Cook, Senior Member, IEEE
+IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS, VOL. UNKNOWN, NO. UNKNOWN, UNKNOWN 2007
+
+
+Source No. 2
+'Predicting Movie Success Based on IMDB Data' by Nithin VR, Pranav M, Sarath Babu PB, and Lijiya A
+International Journal of Data Mining Techniques and Applications Volume: 03, June 2014, Pages: 365-368 
 
 
 # Overview of Data
