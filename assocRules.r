@@ -20,6 +20,16 @@ while(ready == FALSE) { ready <- loadPackages3() }
 
 set.seed(7131)
 
+#define redundant rules function
+redundantRules <- function(rules) {
+  sub <- is.subset(rules,rules)
+  sub[lower.tri(sub,diag=T)] <- NA
+  red <- colSums(sub,na.rm=T) >= 1
+  rrules <- rules[!red]
+  rrules
+} 
+
+
 # Load dataset/subset dataset
 assocData <- readRDS("clean10Kdataset.rds")
 
@@ -45,8 +55,6 @@ assocDataSubset <- assocDataSubset[,-c(2)]
 assocDataSubset$Writer <- as.factor(assocDataSubset$Writer)
 assocDataSubset$Director <- as.factor(assocDataSubset$Director)
 
-assocDataSubset$Actor1 <- as.factor(assocDataSubset$Actor2)
-
 assocDataSubset$Director[assocDataSubset$Director=="N/A"] <- NA
 assocDataSubset$Writer[assocDataSubset$Writer=="N/A"] <- NA
 
@@ -62,11 +70,16 @@ assocDataSubset$Actor2 <- as.factor(unlist(assocDataSubset$Actor2))
 assocDataSubset$Actor3 <- as.factor(unlist(assocDataSubset$Actor3))
 assocDataSubset$Actor4 <- as.factor(unlist(assocDataSubset$Actor4))
 
-#sapply(unlist(assocDataSubset$Actor1, recursive = TRUE, use.names = TRUE))
-#sapply(unlist(assocDataSubset$Actor2, recursive = TRUE, use.names = TRUE))
-#sapply(unlist(assocDataSubset$Actor3, recursive = TRUE, use.names = TRUE))
-#sapply(unlist(assocDataSubset$Actor4, recursive = TRUE, use.names = TRUE))
+#Build ruleset
+movieRules <- apriori(assocDataSubset,parameter = list(support = 0.0001,confidence = 0.9))
+inspect(head(movieRules))
 
+#Removes redundant rules
+uniqueMovieRules <- redundantRules(movieRules)
+#inspect(titanicUniqBetterRulesApriori)
 
-dataFiltered <- apriori(assocDataSubset, support=0.1, confidence= 0.2)
+#Sorts trimmed rules by lift
+sortedUniqueMovieRules <- sort(uniqueMovieRules, by = "lift")
+inspect(head(sortedUniqueMovieRules,40))
+
 
