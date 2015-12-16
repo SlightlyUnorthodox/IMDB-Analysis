@@ -305,6 +305,83 @@ preprocessing <- function(data) {
   
   ### END ACTORS FIX
   
+  ### START CLEANING UP PRODUCER AND CINEMATOGRAPHER
+  ### producer first
+  
+  # single quote removal
+  data$Producer <- lapply(data$Producer, function(x){
+    gsub("\'", "", x)#
+  })
+  
+  # double quote removal
+  data$Producer <- lapply(data$Producer, function(x){
+    gsub("\"", "", x)#
+  })
+  
+  # remove brackets
+  data$Producer <- lapply(data$Producer, function(x){
+    gsub("\\[", "", x)#
+  })
+  
+  data$Producer <- lapply(data$Producer, function(x){
+    gsub("\\]", "", x)#
+  })
+  
+  data$Producer <- lapply(data$Producer, function(x){
+    strsplit(x,",")
+  })
+  
+  firstName <- lapply(data$Producer, function(x){
+    x[[1]][2]
+  })
+  
+  lastName <- lapply(data$Producer, function(x){
+    x[[1]][1]
+  })
+  
+  data$Producer <- paste(firstName, lastName)
+  
+  ### end fixing of producer 
+  
+  ### fix cinematographer
+  
+  # single quote removal
+  data$Cinematographer <- lapply(data$Cinematographer, function(x){
+    gsub("\'", "", x)#
+  })
+  
+  # double quote removal
+  data$Cinematographer <- lapply(data$Cinematographer, function(x){
+    gsub("\"", "", x)#
+  })
+  
+  # remove brackets
+  data$Cinematographer <- lapply(data$Cinematographer, function(x){
+    gsub("\\[", "", x)#
+  })
+  
+  data$Cinematographer <- lapply(data$Cinematographer, function(x){
+    gsub("\\]", "", x)#
+  })
+  
+  data$Cinematographer <- lapply(data$Cinematographer, function(x){
+    strsplit(x,",")
+  })
+  
+  firstName <- lapply(data$Cinematographer, function(x){
+    x[[1]][2]
+  })
+  
+  lastName <- lapply(data$Cinematographer, function(x){
+    x[[1]][1]
+  })
+  
+  data$Cinematographer <- paste(firstName, lastName)
+  
+  ### end fixing cinematographer
+  
+  ### END OF CLEANING UP PRODUCER AND CINEMATOGRAPHER
+  
   # 1.6 Type - factor
   data$Type <- as.factor(data$Type)
   data$Type[data$Type=="N/A"] <- NA
