@@ -41,11 +41,10 @@ names(movieData)
 # now are datasets contain only the important variables pertinent to classification
 # episodes taken about because all values are N/A for this dataset
 
-#maybe need to use lapply we'll see
-#Retail_data[] <- lapply(Retail_data, factor)
-
 #country is going to be cut down to 1 country
 movieData$Country <- lapply(movieData$Country,"[",1)
+
+#movieData$Language <- lapply(movieData$Language,"[",1)
 
 # Cut genre down to 2 items
 movieData$Genre <- lapply(movieData$Genre,"[",1:2)
@@ -141,6 +140,7 @@ movieData <- unnest(movieData,Genre)
 movieData <- unnest(movieData, Writer)
 #movieData <- unnest(movieData, Actors)
 movieData <- unnest(movieData, Country)
+#movieData <- unnest(movieData, Language)
 
 # Drop rows with NA genre because we can't classify these
 movieData <- movieData[!(is.na(as.factor(movieData$Genre))),]
@@ -159,6 +159,12 @@ movieData$Producer <- as.factor(movieData$Producer)
 movieData$Cinematographer <- as.factor(movieData$Cinematographer)
 movieData$Writer <- as.factor(movieData$Writer)
 movieData$Country <- as.factor(movieData$Country)
+#movieData$Language <- as.factor(movieData$Language)
+
+
+#insert pruning methods here
+#movieData <- movieData[movieData$Language == 'English',]
+#movieData <- movieData[movieData$Country == 'USA',]
 
 # Create test and training sets
 part <- createDataPartition(movieData$Genre,p=0.8,list=FALSE)
@@ -194,16 +200,15 @@ c45CMMovie <- confusionMatrix(c45ModelPredictionsMovie, test$Genre)
 
 
 #OBLIQUE CLASSIFICATION 
-obliqueModelMovie <- oblique.tree(formula = Genre~., data = training, oblique.splits = "only")
-obliqueModelPredictionsMovie <- predict(obliqueModelMovie, test)
-obCMMovie <- confusionMatrix(colnames(obliqueModelPredictionsMovie)[max.col(obliqueModelPredictionsMovie)], test$Genre)
+#obliqueModelMovie <- oblique.tree(formula = Genre~., data = training, oblique.splits = "only")
+#obliqueModelPredictionsMovie <- predict(obliqueModelMovie, test)
+#obCMMovie <- confusionMatrix(colnames(obliqueModelPredictionsMovie)[max.col(obliqueModelPredictionsMovie)], test$Genre)
 
 
 #NAIVE BAYES CLASSIFIER
 # train a naive bayes model
 naiveBayesModel <- naiveBayes(Genre~., data=training)
 # make predictions
-#look at this
 predictions <- predict(naiveBayesModel, movieDataWOutGenre) 
 # summarize results
 nbCMMovie <- confusionMatrix(predictions, test$Genre)
@@ -213,7 +218,6 @@ nbCMMovie <- confusionMatrix(predictions, test$Genre)
 kkModel <- kknn(Genre~., test = test, train = training, distance = 1, kernel = "triangular")
 knnPredictions <- predict(kkModel, movieDataWOutGenre)
 knnCMMovie <- confusionMatrix(knnPredictions, test$Genre)
-
 
 
 ##############################################################################################
@@ -227,7 +231,7 @@ print(ripCMMovie)
 print(c45CMMovie)
 
 #OBLIQUE
-print(obCMMovie)
+#print(obCMMovie)
 
 #NAIVE BAYES
 print(nbCMMovie)
@@ -239,15 +243,15 @@ print(knnCMMovie)
 ################## IGNORE BELOW FOR NOW
 
 #get iris accuracies
-accRipIris <- ripCMIris$overall[1]
-accC45Iris <- c45CMIris$overall[1]
-accOBIris <- obCMIris$overall[1]
-accNBIris <- nbCMIris$overall[1]
-accKNNIris <- knnCMIris$overall[1]
+accRipMovie <- ripCMMovie$overall[1]
+accC45Movie <- c45CMMovie$overall[1]
+accOBMovie <- obCMMovie$overall[1]
+accNBMovie <- nbCMMovie$overall[1]
+accKNNMovie <- knnCMMovie$overall[1]
 
 
-accuracyMatrix <- matrix(c(accRipIris, accRipLE, accC45Iris, accC45LE, accOBIris, accOBLE, accNBIris, accNBLE, accKNNIris, accKNNLE), ncol = 2, byrow = TRUE)
-colnames(accuracyMatrix) <- c("Iris Data Accuracies", "Life Expectancy Data Accuracies")
+accuracyMatrix <- matrix(c(accRipMovie, accC45Movie, accOBMovie, accNBMovie, accKNNMovie), ncol = 2, byrow = TRUE)
+colnames(accuracyMatrix) <- c("Movie Data Accuracies", "Life Expectancy Data Accuracies")
 rownames(accuracyMatrix) <- c("Ripper", "C4.5", "Oblique Tree", "Naive Bayes", "KNN")
 accuracyMatrix <- as.table(accuracyMatrix)
 print(accuracyMatrix)
