@@ -3,20 +3,31 @@
 # Date: 23 November 2015
 # Description: Procedure for detecting "usual casts" (association rule mining)
 
+#Source data prep files
+source('datasetCreation.r')
+
 #Dynamically load/install required packages
 ready <- FALSE
-loadPackages4 <- function() {
+loadPackages1 <- function() {
   if( require(R.utils) == FALSE) { install.packages("R.utils") }
-  
+  if( require(stringr) == FALSE) { install.packages("stringr") }
+  if( require(data.table) == FALSE) { install.packages("data.table") }
+  if( require(jsonlite) == FALSE) { install.packages("jsonlite") }
+  if( require(arules) == FALSE) { install.packages("arules") }
+  if( require(arulesViz) == FALSE) { install.packages("arulesViz") }
   ready <- TRUE
 }
-while(ready == FALSE) { ready <- loadPackages4() }
+while(ready == FALSE) { ready <- loadPackages1() }
+
+#Set seed
+set.seed(7131)
 
 # Load dataset/subset dataset
-#
-#
-# Must contain (directors,authors/writers,producers/actors,actresses,etc.)
-#
+# Must contain (directors,authors/writers,actors/actresses,etc.)
+
+assocData <- readRDS("clean10Kdataset.rds")
+assocData <- assocData[,c(4,5,10)]
+assocData <- lapply(assocData,factor)
 
 
 
@@ -27,6 +38,18 @@ while(ready == FALSE) { ready <- loadPackages4() }
 #
 #
 #
+
+
+# Redundant Rules function from Project 2
+#define redundant rules function
+redundantRules <- function(rules) {
+  sub <- is.subset(rules,rules)
+  sub[lower.tri(sub,diag=T)] <- NA
+  red <- colSums(sub,na.rm=T) >= 1
+  rrules <- rules[!red]
+  rrules
+} 
+
 
 
 # Results for this part depend on...
