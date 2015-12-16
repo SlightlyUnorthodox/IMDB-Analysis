@@ -491,8 +491,8 @@ qplot(Year,Runtime,data=stats)
 
 ## Quantitative Analysis
 
-### Clustering
-The unique genre classes were then found by performing a pruning of the initial genre data.
+### Unique Genres
+The unique genre classes were found by performing a pruning of the initial genre data.
 ```{r, eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
 #Prune the data to remove excess collection space
 dataPruned <- lapply(dataGenre, function(x) {
@@ -512,11 +512,10 @@ Then listing the results.
 unique(unlist(dataPruned))
 ```
 
-This resulted in 29 unique genre classes and therefore, 29 clusters to use in analysis.
+This resulted in 29 unique genre classes and therefore 29 clusters to use in cluster analysis.
 
 
 # Method and Materials
-
 ## Clustering
 For cluster analysis, the dataset was reduced to included just the 'Genre' attribute. This was chosen because we believed it had the strongest correlation to grouping similar movies, as well as convenience to match the number of clusters (instructed to be equal to the number of genres). 
 
@@ -563,10 +562,30 @@ The result of the cluster assignments are shown below.
 
 # Discussion
 
+## Clustering
+_Would clustering the movies into k' clusters where k' > k help in better categorization? And how._
+
+In order to answer this question, we counted the quantity of unique genre combinations that were present in the dataset.
+```
+# count unique genres
+length(unique(dataPruned))
+```
+This resulted in 723 distinct genre entries used in our dataset. 
+
+Given this result, using `k' > k` as our new cluster quantity could definitely improve the movie categorization. 
+For example, movies that frequently appeared as 'Short' and 'Comedy' could be considered for its own cluster now (a cluster for a hybrid genre, if you will).
+
+_Which clustering method works best in this case? And why._
+
+Because we were instructed to use `k = # genres` as our cluster amount, the best clustering method was definitely to use a distance based algorithm. 
+
+A density-based cluster analysis could require more clusters to be accurate, as several of the movie data points were classified as 'hybrid' genres (such as the example mentioned in the previous question). Because of their frequency, they would be very dense and take away a cluster from one of the 'pure' genres that it used (i.e., 'Short' or 'Comedy').
+
+We chose kMeans because it performs very quickly with respect to the dataset size and yielded very high accuracy.
+
 
 
 # Conclusion
-
 
 Future endeavors, build larger dataset, allow for k-folds sampling and cross-validation
 
