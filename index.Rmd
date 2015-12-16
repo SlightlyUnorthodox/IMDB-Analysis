@@ -105,6 +105,81 @@ exploreData <- function(choice,length = 50) {
 
 ## Genre Prediction (1)
 
+The task of genre prediction reflected the efforts made in Individual Project I. Using classification methods BLAH BLAH ANDA BLAH (to be fileld later just using blah blah blah to stick out to me), we hoped effectively predict the genre of a film based off its other
+characteristics. 
+
+One of the first steps in achieving this goal was first formatting the data in a way that was helpful and relevant to the task at hand. 
+For example, the imdbID attribute was removed from the dataset when creating the training and test sets since it was independent of
+predicting the genre of the film. 
+
+F-measures and confusino matrices with information will go here. 
+Reasons why we think it may not have worked as well as it should or as well as it did yada yada yada.
+
+Options....(WHAT SPECIFICALLY DOES HE MEAN?)
+When initially creating the datasets used for training and testing, there were many attributes that we had to utilize
+from IMDB. 
+Our options for classification included:
+1. imdbID
+2. Plot
+3. Rated
+4. Title
+5. Writer
+6. Actors
+7. Type
+8. imdbVotes
+9. seriesID
+10. Season
+11. Director
+12. Released
+13. Awards
+14. Genre
+15. imdbRating
+16. Poster
+17. Episode
+18. Language
+19. Country
+20. Runtime
+21. Metascore
+22. Response
+23. Year
+24. Error
+25. Producer
+26. Cinematographer
+27. Composer
+28. CostumeDesigner
+
+Of the 28 options listed, at the end of the day only 12 attributes ended up being used for genre classification.
+These attributes are:
+
+1. Rated                  7. Cinematographer
+2. Title                  8. Genre
+3. Director               9. Writer
+4. Released               10. Actors
+5. Runtime                11. Country
+6. Year                   12. Producer 
+                             
+These attributes were chosen/kept because they provided unique insight on each genre and have values that would be
+indicative of a movie genre.
+
+With regards to classification methods, the methods we chose from were the same as the first individual project:
+RIPPER, C4.5, oblique trees, naive bayes, and the knn classifier.
+
+ADD MORE THINGS
+
+
+When it came to evaluating each of our classification techniques, we computed confusion matrices that provided useful
+metrics related to the success of our classifiers. 
+
+
+ADD MORE THINGS
+
+
+The measures we took to imporve the results as much as possible include trial and errror of which attribtues from the database
+yielded the greatest accuracy.
+
+• What were your options for classification?
+• How did you evaluate different classification techniques?
+• What measures have you taken to improve the results?
 
 --- .class #id 
 
