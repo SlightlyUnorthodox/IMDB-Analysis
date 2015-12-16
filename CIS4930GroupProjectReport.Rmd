@@ -16,7 +16,7 @@ The following report details the research and procedures designed to carry out d
 
 # Literature Review
 
-Source No. 1 
+**Source No. 1**
 'Automatic Video Classification: A Survey of the Literature' by Darin Brezeale and Diane J. Cook, Senior Member, IEEE
 IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS, VOL. UNKNOWN, NO. UNKNOWN, UNKNOWN 2007
 
@@ -29,7 +29,7 @@ that there are many "out of the box" attributes and features that can be used as
 paper is to always be thinking of all the different kinds features or traits that can be used for classifcation problems.
 
 
-Source No. 2
+**Source No. 2**
 'Predicting Movie Success Based on IMDB Data' by Nithin VR, Pranav M, Sarath Babu PB, and Lijiya A
 International Journal of Data Mining Techniques and Applications Volume: 03, June 2014, Pages: 365-368 
 
@@ -695,20 +695,15 @@ print(accuracyMatrix)
 ```
 
 ## Clustering
-For cluster analysis, the dataset was reduced to included just the 'Genre' attribute. This was chosen because we believed it had the strongest correlation to grouping similar movies, as well as convenience to match the number of clusters (instructed to be equal to the number of genres). 
+For cluster analysis, the dataset was reduced to included just the 'Genre' attribute. This was chosen because we believed it had the strongest correlation to grouping similar movies, as well as convenience to match the number of clusters (instructed to be equal to the number of genres). In order to prepare the dataset, the working set was converted into a weighted transactional database, where the weight was equal to one over the number of constituent genres. 
 
 ```{r, eval=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
 # Load dataset
 data <- readRDS("clean10Kdataset.rds")
-
-#subset dataset to Genre list
-dataGenre <- data[, 13]
 ```
 
 As mentioned above, we found 29 distinct genres to use as clusters. This included "N/A" as a genre. 
 We then created a matrix which mapped out the individual existence of the genre type to that movie.
-
--- Insert picture here --
 
 Using kMeans, we performed a distance based cluster analysis and appended its results to the matrix.
 
@@ -723,33 +718,34 @@ distanceMatrix$cluster <- as.factor(kmeanCluster$cluster)
 On our second attempt, we instead weighted the values of the distance matrix for each movie as a percentage.
 For example: If a movie was classified as 'Short' and 'Comedy', its weight would then be 0.5 in 'Short' and 0.5 in 'Comedy'.
 
--- Insert other distance matrix photo --
-
 ## Association Rules
 For Association Rule Mining, the first subset of the dataset was reduced down to just cast members compromising of Director, Producer, Writer, and Actors. Actors initially was brought in a list of Actors and further preprocessing was done on this end. This proved lackluster and was eventually moved to the dataset creation end of the project. Actors were then fractured into four Actor components and handled appropriately. 
 
-```
+```{r eval=FALSE}
 # Load dataset/subset dataset
 assocData <- readRDS("clean10Kdataset.rds")
 
 # Remove columns not worthy of analysis
 assocDataSubset <- assocData[,c("Director","Producer","Writer","Cinematographer","Actor1","Actor2","Actor3","Actor4")]
-
 ```
 
 The dataset was then passed into the apriori function to generate rules
-```
+```{r eval=FALSE}
 #Build ruleset
 movieRules <- apriori(assocDataSubset,parameter = list(support = 0.0001,confidence = 0.9));
 
 ```
 
-Redundant rules were then removed 
-```
+Redundant rules were then removed.
+
+```{r eval=FALSE}
 #Removes redundant rules
 uniqueMovieRules <- redundantRules(movieRules)
 ```
-Sorted ruleset by lift
+
+Sorted ruleset by lift.
+
+```{r eval=FALSE}
 #Sorts trimmed rules by lift
 sortedUniqueMovieRules <- sort(uniqueMovieRules, by = "lift")
 ```
@@ -757,25 +753,18 @@ sortedUniqueMovieRules <- sort(uniqueMovieRules, by = "lift")
 For the Genre/Cast portion of the Association Rules, I attempted to bring in the Genre as a factor of 29 attributes and tried to merge it back into the main subset. This did not proved useful when trying run apriori as it gave errors of it not being in logical or factor format.  
 
 # Results
-## Genre Classification
-The results of the classifications are shown below.
 
+## Genre Classification
+The results of the classifications are shown in demo files.
 
 ## Clustering
-The result of the cluster assignments are shown below.
-
--- Insert analysis of kCluster output (original)--
--- withinss, centers, size, etc --
-
--- Insert analysis of 2nd kCluster output ("good" one)--
--- withinss, centers, size, etc --
-
+The result of the cluster assignments are shown in demo files.
 
 ## Association Rules
 
 When running apriori on the general subset produced 20 rules based on support values = 0.0001 and confidence = 0.9;
 
-```
+```{r eval=FALSE}
 lhs                                               rhs                                          support     confidence lift
 3  {Actor2=John Murray}                           => {Actor1=Dewey 'Pigmeat' Markham}             0.000179501 1          5571
 6  {Cinematographer=['Campos, Ant\\xc3\\xb4nio']} => {Director=Antônio Campos}                    0.000179501 1          5571
@@ -800,7 +789,7 @@ lhs                                               rhs                           
 > 
 ```
 
-*Bugs*
+**Bugs**
 There are no results when attempting to rectify the "lhs" portion of the the apriori. I kept getting "Unknown Item Labels" whenever trying to filter the "lhs" portion. After further researching into this, I found that I had to specify SPECIFICALLY what each Director, Producer, Actors,etc were on the "lhs" which will prove to be infeasibly as there are many possibilities for each section. 
 
 There are no results when attempting to rectify the "Genre/Cast" portion of the apriori. I attempted to fracture "Genre" into their respective genre types and run the apriori on that. There were many errors that led up to this that eventually led to this portion of the analysis to not work entirely. My attempts at the "Genre/Cast" are in the assocRules.r file but commented out to make the general apriori function runnable. 
@@ -849,7 +838,7 @@ We were unable to evaluate the oblique tree classification technique becuase the
 
 **_What measures have you taken to improve the results?_**
 
-The measures we took to imporve the results as much as possible include trial and errror of which attribtues from the database yielded the greatest accuracy. Extreme care was also put into formatting and preprocessing the data so that the classification methods would correctly run, examples can be see in the methods and materials section. To improve the results, multiple trials could have improved results by looking at subsets of data that isolate certain areas of interest like only movies from 2010-2015.
+The measures we took to improve the results as much as possible include trial and error of which attribtues from the database yielded the greatest accuracy. Extreme care was also put into formatting and preprocessing the data so that the classification methods would correctly run, examples can be see in the methods and materials section. To improve the results, multiple trials could have improved results by looking at subsets of data that isolate certain areas of interest like only movies from 2010-2015.
 
 
 ## Clustering
@@ -887,7 +876,8 @@ I ran apriori (the only way that R was allowing me to run) with no variables set
 # Conclusion
 
 Regardless of the results, after the work done to tackle these data mining problems there are several clear avenues of approach for future endeavors. Ideally, a bigger dataset would be built, allowing for a greater variety of sampling methods to be applied, namely k-folds and stratified sampling. It seems apparent that the results for each task could have been improved by taking a stratified sample by movie years or even genres (for developing *usual casts*). Building a larger dataset could be done rather easily, it's primarily a question of time and resources. In the process of building the small "10K" dataset used here, the limiting factor was internet speed and availability, the risk of having a connection drop out mid web-sraping process prevented trying to run longer/larger python API-calls.
-# References & Resources
+
+## References & Resources
 
 The Internet Movie Database
 [http://www.imdb.com](IMDb)
@@ -898,8 +888,7 @@ IMDbPY - Python API and Materials for IMDB searches
 The Open Movie Database
 [http://www.omdbapi.com/](OMDb API)
 
-
-# Readings
+## Readings
 
 * 'Automatic Video Classification: A Survey of the Literature' by Darin Brezeale and Diane J. Cook, Senior Member, IEEE
 IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS, VOL. UNKNOWN, NO. UNKNOWN, UNKNOWN 2007
