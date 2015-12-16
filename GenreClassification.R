@@ -1,24 +1,21 @@
 ##############################################################################################
-#                                     INSTALLS
+#                                   Dynamically Load/Install Packages
 ##############################################################################################
-#install.packages("e1071")
-#install.packages("kknn")
-#install.packages("klaR")
-install.packages("caret")
-#install.packages("RWeka")
-#install.packages("oblique.tree")
-#install.packages("base")
 
+#Dynamically load/install required packages
+ready <- FALSE
+loadPackages3 <- function() {
+  if( require(R.utils) == FALSE) { install.packages("R.utils") }
+  if( require(e1071) == FALSE) { install.packages("e1071") }
+  if( require(kknn) == FALSE) { install.packages("klaR")}
+  if( require(RWeka) == FALSE) { install.packages("RWeka") }
+  if( require(oblique.tree) == FALSE) { install.packages("oblique.tree") }
+  if (require(caret) == FALSE) { install.packages("caret") }
+  ready <- TRUE
+}
+while(ready == FALSE) { ready <- loadPackages3() }
 
-##############################################################################################
-#                                    LIBRARY CALLS
-##############################################################################################
-library(klaR)
-#Caret is the main library in which other libraries pull from for the method calls to classify the data sets
-library(caret)
-library(kknn)
-library(oblique.tree)
-
+set.seed(7131)
 
 ##############################################################################################
 #                                   IMDB DATA SET
@@ -56,7 +53,7 @@ movieData$Language <- lapply(movieData$Language,"[",1:2)
 movieData$Genre <- lapply(movieData$Genre,"[",1:2)
 
 # Cleans writer variables
-noParentheses <- lapply(movieData$Writer, function(x) {
+movieData$Writer <- lapply(movieData$Writer, function(x) {
   gsub( " *\\(.*?\\) *", "", x)
   })
 
@@ -65,37 +62,19 @@ movieData <- unnest(movieData,Genre)
 
 # Drop rows with NA genre
 movieData <- movieData[!(is.na(as.factor(movieData$Genre))),]
+movieData <- movieData[!movieData$Genre == "N/A",]
+movieData$Genre <- as.factor(movieData$Genre)
 
 # Create test and training sets
+part <- createDataPartition(movieData$Genre,p=0.8,list=FALSE)
+training <- movieData[part,]
+test <- movieData[-part,]
 
-movieData$Writer <- noParentheses
+# Save training/test data for later
+saveRDS(training,file="training.rds")
+saveRDS(test,file="test.rds")
 
-createTestMovieSet <- function(dataset,classifier) {
-  #set seed, said first digits of UF ID so i used the first 4
-  set.seed(1911)
-  
-  #create partition space only want 20% for testing
-  part <- createDataPartition(classifier, p=0.8, list=FALSE)
-  test <-dataset[-part,]
-  test
-}
-
-
-createTrainingMovieSet <- function(dataset,classifier) {
-  #set seed, said first digits of UF ID so i used the first 4
-  set.seed(1911)
-  
-  #create partition space only want 80% for testing
-  part <- createDataPartition(classifier, p=0.8, list=FALSE)
-  training <-dataset[part,]
-  training
-}
-
-#setting variables for the train and test sets
-testDataMovie = createTestMovieSet(movieData, movieData$Genre)
-trainingDataMovie = createTrainingMovieSet(movieData, movieData$Genre)
-
-############################ TO DOS ##################################
+############################ TO DO'S ##################################
 #once testData is successfully created, need to go in and change -6 to appropriate value to create test data 
 #that does not contain attribute genre to replace in the predict methods below where you see testDataMovie[,1:4]
 
