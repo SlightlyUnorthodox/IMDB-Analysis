@@ -1,11 +1,12 @@
 ##############################################################################################
 #                                   Dynamically Load/Install Packages
 ##############################################################################################
-
 #Dynamically load/install required packages
 ready <- FALSE
 loadPackages3 <- function() {
   if( require(R.utils) == FALSE) { install.packages("R.utils") }
+  if( require(tidyr) == FALSE) { install.packages("tidyr") }
+  if( require(dplyr) == FALSE) { install.packages("dplyr") }
   if( require(e1071) == FALSE) { install.packages("e1071") }
   if( require(kknn) == FALSE) { install.packages("klaR")}
   if( require(RWeka) == FALSE) { install.packages("RWeka") }
@@ -15,7 +16,7 @@ loadPackages3 <- function() {
 }
 while(ready == FALSE) { ready <- loadPackages3() }
 
-set.seed(7131)
+set.seed(1911)
 
 ##############################################################################################
 #                                   IMDB DATA SET
@@ -25,14 +26,14 @@ set.seed(7131)
 movieData <- readRDS("clean10Kdataset.rds")
 
 # clean up the movie data set
-# description, rating, imdbVotes, seriesID, season, type, awards, imdbRating, Poster, episode, imdbID, Metascore, response, and year
+# description, rating, imdbVotes, seriesID, season, type, awards, imdbRating, Poster, episode, imdbID, Metascore, response, language, and year
 # were removed from table for analysis because they did not provide information helpful to classification
 
 # check variables
 names(movieData)
 
 # remove unneeded variables
-movieData <- movieData[,c(3,4,5,10,11,13,17,18,19,23)]
+movieData <- movieData[,-c(1,2,7,8,9,10,13,15,16,17,18,21,22,24)]
 
 # confirm variable removal
 names(movieData)
@@ -46,16 +47,95 @@ names(movieData)
 #country is going to be cut down to 2 items per list
 movieData$Country <- lapply(movieData$Country,"[",1:2)
 
-# Language is going to be cut down to 2 items as well
-movieData$Language <- lapply(movieData$Language,"[",1:2)
-
 # Cut genre down to 3 items
 movieData$Genre <- lapply(movieData$Genre,"[",1:2)
 
-# Cleans writer variables
+# Cleans writer entries
 movieData$Writer <- lapply(movieData$Writer, function(x) {
   gsub( " *\\(.*?\\) *", "", x)
   })
+
+tgemp <- movieData
+
+# Reordering first and last name and removing exraneous separators
+# First step is to remove single quote and double quotes
+# yes, soempeople's name may have a single quote in it however numbers are so small
+# it wont affect the data
+
+###################################### fix producer ######################################
+
+# single quote removal
+movieData$Producer <- lapply(movieData$Producer, function(x){
+  gsub("\'", "", x)#
+})
+
+# double quote removal
+movieData$Producer <- lapply(movieData$Producer, function(x){
+  gsub("\"", "", x)#
+})
+
+# remove brackets
+movieData$Producer <- lapply(movieData$Producer, function(x){
+  gsub("\\[", "", x)#
+})
+
+movieData$Producer <- lapply(movieData$Producer, function(x){
+  gsub("\\]", "", x)#
+})
+
+movieData$Producer <- lapply(movieData$Producer, function(x){
+strsplit(x,",")
+})
+
+firstName <- lapply(movieData$Producer, function(x){
+ x[[1]][2]
+})
+
+lastName <- lapply(movieData$Producer, function(x){
+  x[[1]][1]
+})
+
+movieData$Producer <- paste(firstName, lastName)
+
+########################## end fixing of producer ########################
+
+###################################### fix cinematographer ######################################
+
+# single quote removal
+movieData$Cinematographer <- lapply(movieData$Cinematographer, function(x){
+  gsub("\'", "", x)#
+})
+
+# double quote removal
+movieData$Cinematographer <- lapply(movieData$Cinematographer, function(x){
+  gsub("\"", "", x)#
+})
+
+# remove brackets
+movieData$Cinematographer <- lapply(movieData$Cinematographer, function(x){
+  gsub("\\[", "", x)#
+})
+
+movieData$Cinematographer <- lapply(movieData$Cinematographer, function(x){
+  gsub("\\]", "", x)#
+})
+
+movieData$Cinematographer <- lapply(movieData$Cinematographer, function(x){
+  strsplit(x,",")
+})
+
+firstName <- lapply(movieData$Cinematographer, function(x){
+  x[[1]][2]
+})
+
+lastName <- lapply(movieData$Cinematographer, function(x){
+  x[[1]][1]
+})
+
+movieData$Cinematographer <- paste(firstName, lastName)
+
+########################## end fixing of Cinematographer ########################
+
 
 # Create unique rows for each genre
 movieData <- unnest(movieData,Genre)
