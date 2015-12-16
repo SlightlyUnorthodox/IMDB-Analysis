@@ -56,7 +56,7 @@ The data overview is divided into the following steps, as significant decisions 
 
 The packages and required workspace prepartion steps are shown below for reproducibility purposes.
 
-```{r eval=TRUE,warning=FALSE,message=FALSE}
+```{r eval=FALSE,warning=FALSE,message=FALSE}
 #Dynamically load/install required packages
 ready <- FALSE
 loadPackages1 <- function() {
@@ -224,7 +224,7 @@ with open('imdb_10K_cast_plus.csv','wb') as csvfile:
 
 Having created a working dataset, the following function, *jsonToCsv*, was written to speed up the process of formatting the data for use in R. *jsonToCsv* first reads the json object from the given file (defaulting to *imdb_30K_sample.json*) using the R package *jsonlite*. While the function returns a data frame, it also  backs up the data to a local csv file.
 
-```{r eval=TRUE}
+```{r eval=FALSE}
 # Reformat OMDB JSON queries as csv
 jsonToCsv <- function(filename = "imdb_30K_sample.json",write=TRUE,
                       csvfile = "imdb_30K_sample.csv") {
@@ -241,7 +241,7 @@ data <- jsonToCsv()
 
 The initial OMDb query returned the following attributes for each movie.
 
-```{r eval=TRUE}
+```{r eval=FALSE}
 names(data)
 ```
 
@@ -249,7 +249,7 @@ Not all of these attributes were for use in any data mining task, however they w
 
 Each attribute were individually examined and set to the right type. An example of some of the variable preprocessing can be seen below with the *timeSet* function which was used on *Runtime*. The original *Runtime* data had three cases: **"N/A"**, **"# hours # min"**, or **"# min"**. These were reduced down to as single numeric for the number of minutes, with "N/A" values being 0 minutes.
 
-```{r eval=TRUE}
+```{r eval=FALSE}
 # Runtime reformat, string -> minutes (integer)
 timeSet <- function(x) {
   if(length(x == 2)) {
@@ -268,7 +268,7 @@ The full preprocessing script is shown below. Critical steps are described in th
 1. Subset data to retain only movies (30K rows ==> ~12K rows)
 2. Save dataset to R data object and to csv (for coherent use across all project members)
 
-```{r eval=TRUE,echo=TRUE}
+```{r eval=FALSE,echo=TRUE}
 # Clean data set, set proper types, drop invalid rows, 
 preprocessing <- function(data) {
   
@@ -443,7 +443,7 @@ preprocessing <- function(data) {
 
 At the end of the preprocessing stage, the full list of dataset variables was:
 
-```{r eval=TRUE, echo=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+```{r eval=FALSE, echo=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
 data <- preprocessing(data)
 names(data)
 ```
@@ -456,7 +456,7 @@ The following are some of the observations made in determining statistical valid
 
 An initial query was made to examine how many of the original 30K elements were valid movies as well as how many showed up as null values.
 
-```{r eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+```{r eval=FALSE,echo=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
 # Prepare example set
 stats <- jsonToCsv()
 
@@ -473,7 +473,7 @@ As shown here, a significant majority of the tuples were actually episodes, whic
 
 To confirm successful deletion of non-movie and null entities from the sample data, the following code was run.
 
-```{r  eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+```{r  eval=FALSE,echo=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
 # Run preprocessing procedures
 stats <- preprocessing(stats)
 
@@ -493,7 +493,7 @@ The following are some fairly self-explanatory visualizations of the sample data
 
 There was a clear and reasonable increase in the number of movies sampled for each year approaching the present day, which can be inferred to correspond to the growth of the movie industry over time.
 
-```{r eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+```{r eval=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
 # Display distribution of movie years
 ggplot(stats, aes(x = factor(Year))) + geom_bar(stat = "bin")
 ```
@@ -502,7 +502,7 @@ ggplot(stats, aes(x = factor(Year))) + geom_bar(stat = "bin")
 
 While someone crowded, the changes in movie rating methods over periods of time can be seen, as well as the clear stratification of films marketed towards different age groups.
 
-```{r, eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+```{r, eval=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
 # Display ratings by year
 qplot(Year,factor(Rated),data=stats,geom=c("boxplot","jitter"))
 ```
@@ -511,7 +511,7 @@ qplot(Year,factor(Rated),data=stats,geom=c("boxplot","jitter"))
 
 One last visualization provides the distribution of movie runtimes over the years. While several inferences could be made, without further analysis the only thing that can be safely assumed is that there is a clear distinction between short movies (under an hour) and longer films and that the distinction appears to fade as we move towards the present day.
 
-```{r, eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+```{r, eval=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
 # Display distribution of movies runtimes by years
 qplot(Year,Runtime,data=stats)
 ```
@@ -548,7 +548,7 @@ predicting the genre of the film.
 One type of preprocessing that we addressed was for the Producer and Cinematographer columns the data was formatted as such
 ['LastName, FirstName']. In order to use this data in a format that could be used by the classification methods we performed the following operations. Note: Same process was run for Cinematographer
 
-```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
 ###################################### fix producer ######################################
 
 # single quote removal
@@ -587,7 +587,7 @@ movieData$Producer <- paste(firstName, lastName)
 
 One other type of processing we had to address was for the column 'Writer' because it read in with parenthetical notes that affected how the classification algorithms performed. The processing is shown below:
 
-```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
 # Cleans writer entries
 movieData$Writer <- lapply(movieData$Writer, function(x) {
   gsub( " *\\(.*?\\) *", "", x)
@@ -597,14 +597,14 @@ movieData$Writer <- lapply(movieData$Writer, function(x) {
 The following code below are snippets of the key functions of the GenreClassification.R script:
 
 Here we remove the columns that don't aid classification:
-```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
 
 # remove unneeded variables
 movieData <- movieData[,-c(1,2,6,7,8, 9, 11, 12, 14, 15, 16, 17, 20, 21, 23, 30 ,31)]
 ```
 
 Here we use unnest because some of our attributes are stored as lists and for processing purposes they needed to be their own rows.
-```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
 # Create unique rows for each genre
 movieData <- unnest(movieData,Genre)
 movieData <- unnest(movieData, Writer)
@@ -613,14 +613,14 @@ movieData <- unnest(movieData, Country)
 ```
 
 Here we remove the rows with the NA genre because these cannot be classified:
-```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
 movieData <- movieData[!(is.na(as.factor(movieData$Genre))),]
 movieData <- movieData[!movieData$Genre == "N/A",]
 movieData$Genre <- as.factor(movieData$Genre)
 ```
 
 Here we cast the string as factors so that the classification algorithms have the correct parameters:
-```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
 # Cast as factor
 movieData$Rated <- as.factor(movieData$Rated)
 movieData$Title <- as.factor(movieData$Title)
@@ -636,7 +636,7 @@ movieData$Country <- as.factor(movieData$Country)
 ```
 
 Like in project I we assign training and test sets:
-```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
 # Create test and training sets
 part <- createDataPartition(movieData$Genre,p=0.8,list=FALSE)
 training <- movieData[part,]
@@ -644,7 +644,7 @@ test <- movieData[-part,]
 ```
 
 Here are the classification algorithms we utilized, note we don't run the oblique method because it fails due to memory allocation:
-```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
 #RIPPER CLASSIFIER
 ripperModelMovie <- JRip(Genre~., data = training)
 ripperPredictionsMovie <- predict(ripperModelMovie, movieDataWOutGenre)
@@ -683,7 +683,7 @@ knnCMMovie <- confusionMatrix(p, subset)
 ```
 
 Below prints the accuracies for each method used above in a table:
-```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE}
+```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE}
 accRipMovie <- ripCMMovie$overall[1]
 accC45Movie <- c45CMMovie$overall[1]
 accNBMovie <- nbCMMovie$overall[1]
@@ -694,9 +694,6 @@ colnames(accuracyMatrix) <- c("Movie Data Accuracies")
 rownames(accuracyMatrix) <- c("Ripper", "C4.5", "Naive Bayes", "KNN")
 accuracyMatrix <- as.table(accuracyMatrix)
 print(accuracyMatrix)
-```
-
-
 ```
 
 ## Clustering
@@ -742,16 +739,6 @@ The results of the classifications are shown below.
 movieData <- movieData[movieData$Country == 'USA']
 ```
 
-![](/JRIPusaPrune.png)
-
-This shows the accuracy of the RIPPER algorithm.
-
-![](/c45USAprune.png)
-
-This shows the accuracy of the C4.5 algorithm.
-
-![](/NBusaPrune.png)
-
 This shows the accuracy of the Naive Bayes algorithm.
 
 **The results shown below use a pruned dataset using Language equal to 'English'**
@@ -759,19 +746,6 @@ This shows the accuracy of the Naive Bayes algorithm.
 ```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
 movieData <- movieData[movieData$Country == 'USA']
 ```
-
-![](/englishPrune.png)
-
-This shows the accuracy of the RIPPER algorithm.
-
-![](/c45EnglishPrune.png)
-
-This shows the accuracy of the C4.5 algorithm.
-
-![](/NBenglishPrune.png)
-
-This shows the accuracy of the Naive Bayes algorithm.
-
 
 ## Clustering
 The result of the cluster assignments are shown below.
