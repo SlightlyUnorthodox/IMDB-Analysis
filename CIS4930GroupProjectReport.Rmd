@@ -44,9 +44,7 @@ The data overview is divided into the following steps, as significant decisions 
 * Preprocessing
 * Datset Statistics
 
-The packages and required workspace prepartion steps are shown below for reproducibility purposes.
-
-```{r eval=TRUE,warning=FALSE,message=FALSE}
+```{r eval=TRUE,echo=FALSE,warning=FALSE,message=FALSE}
 #Dynamically load/install required packages
 ready <- FALSE
 loadPackages1 <- function() {
@@ -85,13 +83,13 @@ Numerous efforts were carried out to build a work sample set for this project, a
 
 Our working dataset was created using a python script making calls to the OMDb API. While this method was slow, completing approximately 3-5 http requests per second on an average wifi connection, it saved an enormous amount of time in preprocessing and fine-tuning as it loaded all the available, useful information as JSON objects which could be read into R efficiently and cheaply.
 
-As seen below, the *imdbscraper.py* script was set to a sample size of 30 thousand values (for reasons explained later) and made a unique http request for each randomly generated seven-digit id up to the approximate maximum of 5262000. Each request return a json object which was stored in an array of sample size.
+The *imdbscraper.py* script was set to a sample size of 30 thousand values and made a unique http request for each randomly generated seven-digit id up to the approximate maximum of 5262000. Each request return a json object which was stored in an array of sample size.
 
 Once the specified number of requests were made, the json array was dumped and written to a file.
 
 Note that although the dataset is created from OMBb's 3rd-party API, each request contains an IMDb ID corresponding to the same values in the IMDb database.
 
-```{r eval=FALSE}
+```{r eval=FALSE,echo=FALSE}
 ## Title: IMDB sample database creator
 ## Filename: imdbscraper.py
 ## Author: Dax Gerts
@@ -124,9 +122,9 @@ with codecs.open('imdb_re_30k_sample.txt','w','utf8') as f:
 	json.dump(data, f)
 ```
 
-It was discovered further on in the process on building the sample set that the Open Movie Database was missing a number of values from the IMDb database. To rectify this, another python script was written using a list of the subset of IMDb movie IDs selected in preprocessing. The script used the IMDbPy API to return additional cast items: *Producer*, *Cinematographer*, *Composer*, and *CostumeDesigners*.
+It was discovered further on in the process on building the sample set that the Open Movie Database was missing a number of values from the IMDb database. To rectify this, another python script, *castscrape.py* was written using a list of the subset of IMDb movie IDs selected in preprocessing. The script used the IMDbPy API to return additional cast items: *Producer*, *Cinematographer*, *Composer*, and *CostumeDesigners*.
 
-```{r eval=FALSE}
+```{r eval=FALSE,echo=FALSE}
 ## Title: IMDB sample database creator
 ## Filename: castscrape.py
 ## Author: Dax Gerts
@@ -212,9 +210,9 @@ with open('imdb_10K_cast_plus.csv','wb') as csvfile:
 
 ### Load Dataset Into R
 
-Having created a working dataset, the following function, *jsonToCsv*, was written to speed up the process of formatting the data for use in R. *jsonToCsv* first reads the json object from the given file (defaulting to *imdb_30K_sample.json*) using the R package *jsonlite*. While the function returns a data frame, it also  backs up the data to a local csv file.
+Having created a working dataset, the function, *jsonToCsv*, was written to speed up the process of formatting the data for use in R. *jsonToCsv* first reads the json object from the given file (defaulting to *imdb_30K_sample.json*) using the R package *jsonlite*. While the function returns a data frame, it also  backs up the data to a local csv file.
 
-```{r eval=TRUE}
+```{r eval=TRUE, echo = FALSE}
 # Reformat OMDB JSON queries as csv
 jsonToCsv <- function(filename = "imdb_30K_sample.json",write=TRUE,
                       csvfile = "imdb_30K_sample.csv") {
@@ -227,8 +225,6 @@ jsonToCsv <- function(filename = "imdb_30K_sample.json",write=TRUE,
 data <- jsonToCsv()
 ```
 
-### Variables
-
 The initial OMDb query returned the following attributes for each movie.
 
 ```{r eval=TRUE}
@@ -239,7 +235,7 @@ Not all of these attributes were for use in any data mining task, however they w
 
 Each attribute were individually examined and set to the right type. An example of some of the variable preprocessing can be seen below with the *timeSet* function which was used on *Runtime*. The original *Runtime* data had three cases: **"N/A"**, **"# hours # min"**, or **"# min"**. These were reduced down to as single numeric for the number of minutes, with "N/A" values being 0 minutes.
 
-```{r eval=TRUE}
+```{r eval=TRUE,echo=FALSE}
 # Runtime reformat, string -> minutes (integer)
 timeSet <- function(x) {
   if(length(x == 2)) {
@@ -253,12 +249,14 @@ timeSet <- function(x) {
 }
 ```
 
-The full preprocessing script is shown below. Critical steps are described in the code comments. Note that the script ends with two significant steps:
+The values for *Writers*, *Actors*, *Genres*, and several other variables were originally retrieved from JSON as strings of names, often with rough formatting. The preprocessing 
+
+Note that the script ends with two significant steps:
 
 1. Subset data to retain only movies (30K rows ==> ~12K rows)
 2. Save dataset to R data object and to csv (for coherent use across all project members)
 
-```{r eval=TRUE,echo=TRUE}
+```{r eval=TRUE,echo=FALSE}
 # Clean data set, set proper types, drop invalid rows, 
 preprocessing <- function(data) {
   
@@ -433,7 +431,7 @@ preprocessing <- function(data) {
 
 At the end of the preprocessing stage, the full list of dataset variables was:
 
-```{r eval=TRUE, echo=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+```{r eval=TRUE, echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
 data <- preprocessing(data)
 names(data)
 ```
