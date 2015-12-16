@@ -516,11 +516,14 @@ One last visualization provides the distribution of movie runtimes over the year
 qplot(Year,Runtime,data=stats)
 ```
 
-## Quantitative Analysis
+# Method and Materials
+
+## Genre Classification
 
 ### Unique Genres
 The unique genre classes were found by performing a pruning of the initial genre data.
-```{r, eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+
+```{r, eval=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
 #Prune the data to remove excess collection space
 dataPruned <- lapply(dataGenre, function(x) {
   # Make the collection 'unique', removing all the blank collection spots
@@ -530,11 +533,6 @@ dataPruned <- lapply(dataGenre, function(x) {
   x <- x[-length(x)]
  
 })
-```
-
-Then listing the results.
-
-```{r, eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
 #list unique genre entries
 unique(unlist(dataPruned))
 ```
@@ -579,6 +577,9 @@ These attributes are:
 6. Year                   12. Producer 
  
 The attributes that were removed were chosen because they were deemed irrelevant to determining the genre of a movie. Some of the attributes were subbed back into the overall data table to check and see if they affected the overall accuracy.
+
+For genre classification, the dataset was reduced down to 14 or less attributes depending on the specific run. The attributes 'Description', 'Rating', 'imdbVotes', 'seriesID', 'Season', 'Type', 'Awards', 'imdbRating', 'Poster', 'Episode', 'Released', 'imdbID', 'Metascore', 'Response', 'Language', and 'Country' were the attributes that were often removed from the dataset when running classification algorithms. These attributes were chosen because they were deemed irrelevant to determining the genre of a movie. Some of the attributes were subbed back into the overall data table to check and see if they affected the overall accuracy.
+
 Language and Country specifically were an interesting pair of attributes because they relayed very similar information so 
 either or were chosen to be used during classification.
 Released relayed almost identical information as the attribute 'Year' but was formatted as a date which threw off some of the classification algorithms, so it was removed as a result.                             
@@ -856,22 +857,10 @@ print(knnCMMovie)
 
 ```
 
-
-
-# clean up the movie data set
-# description, rating, imdbVotes, seriesID, season, type, awards, imdbRating, Poster, episode, released, imdbID, Metascore, response, language, and year
-# were removed from table for analysis because they did not provide information helpful to classification
-
-# check variables
-names(movieData)
-
-# remove unneeded variables
-movieData <- movieData[,-c(1,2,6,7,8, 9, 11, 12, 14, 15, 16, 17, 20, 21, 23, 30 ,31)]
-
 ## Clustering
 For cluster analysis, the dataset was reduced to included just the 'Genre' attribute. This was chosen because we believed it had the strongest correlation to grouping similar movies, as well as convenience to match the number of clusters (instructed to be equal to the number of genres). 
 
-```{r, eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+```{r, eval=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
 # Load dataset
 data <- readRDS("clean10Kdataset.rds")
 
@@ -886,7 +875,7 @@ We then created a matrix which mapped out the individual existence of the genre 
 
 Using kMeans, we performed a distance based cluster analysis and appended its results to the matrix.
 
-```{r, eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+```{r, eval=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
 # kmean cluster with k = 29 clusters (genres)
 kmeanCluster <- kmeans(distanceMatrix, 29)
 
