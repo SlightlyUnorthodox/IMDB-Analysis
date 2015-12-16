@@ -13,6 +13,8 @@ loadPackages3 <- function() {
   if( require(arules) == FALSE) { install.packages("arules") }
   if( require(reshape2) == FALSE) { install.packages("reshape2") }
   if( require(stringr) == FALSE) { install.packages("stringr") }
+  if( require(tidyr) == FALSE) { install.packages("tidyr") }
+  if( require(base) == FALSE) { install.packages("base") }
   ready <- TRUE
 }
 while(ready == FALSE) { ready <- loadPackages3() }
@@ -32,23 +34,28 @@ redundantRules <- function(rules) {
 assocData <- readRDS("clean10Kdataset.rds")
 
 # Remove columns not worthy of analysis
-assocDataSubset <- assocData[,c("Director","Writer","Actor1","Actor2","Actor3","Actor4")]
-#assocDataSubset <- assocData[,c("Director","Writer","Actors","Producer","Cinematographer","Composer","CostumerDesigners","Genre")]
+assocDataSubset <- assocData[,c("Director","Producer","Writer","Cinematographer","Actor1","Actor2","Actor3","Actor4")]
+gcData <- assocData[,c("Genre","Director","Producer","Writer","Cinematographer","Actor1","Actor2","Actor3","Actor4")]
+ 
+gcData$Genre <- lapply(gcData$Genre,"[",1:2)
+gcData <- unnest(gcData,Genre)
+gcData <- gcData[!(is.na(as.factor(gcData$Genre))),]
+gcData <- gcData[!gcData$Genre == "N/A",]
+gcData$Genre <- as.factor(gcData$Genre)
+ 
 
 #Build ruleset
-movieRules <- apriori(assocDataSubset,parameter = list(support = 0.0001,confidence = 0.9),
-                      appearance = list(lhs=c("Director","Writer")));
-inspect(head(movieRules))
-
-
+movieRules <- apriori(assocDataSubset,parameter = list(support = 0.0001,confidence = 0.9));
+genreRules <- apriori(gcData,parameter = list(support = 0.01,confidence = 0.9));
 
 
 #Removes redundant rules
 uniqueMovieRules <- redundantRules(movieRules)
-#inspect(titanicUniqBetterRulesApriori)
+uniqueGenreRules <- redundantRules(genreRules)
 
 #Sorts trimmed rules by lift
 sortedUniqueMovieRules <- sort(uniqueMovieRules, by = "lift")
-inspect(head(sortedUniqueMovieRules,40))
+# sortedUniqueGenreRules <- sort(uniqueGenreRules, by = "lift")
+inspect(head(sortedUniqueMovieRules,20))
 
 
