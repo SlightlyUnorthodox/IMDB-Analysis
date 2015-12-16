@@ -529,7 +529,7 @@ predicting the genre of the film.
 One type of preprocessing that we addressed was for the Producer and Cinematographer columns the data was formatted as such
 ['LastName, FirstName']. In order to use this data in a format that could be used by the classification methods we performed the following operations. Note: Same process was run for Cinematographer
 
-```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
 ###################################### fix producer ######################################
 
 # single quote removal
@@ -568,7 +568,7 @@ movieData$Producer <- paste(firstName, lastName)
 
 One other type of processing we had to address was for the column 'Writer' because it read in with parenthetical notes that affected how the classification algorithms performed. The processing is shown below:
 
-```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
 # Cleans writer entries
 movieData$Writer <- lapply(movieData$Writer, function(x) {
   gsub( " *\\(.*?\\) *", "", x)
@@ -578,14 +578,16 @@ movieData$Writer <- lapply(movieData$Writer, function(x) {
 The following code below are snippets of the key functions of the GenreClassification.R script:
 
 Here we remove the columns that don't aid classification:
-```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+
+```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
 
 # remove unneeded variables
 movieData <- movieData[,-c(1,2,6,7,8, 9, 11, 12, 14, 15, 16, 17, 20, 21, 23, 30 ,31)]
 ```
 
 Here we use unnest because some of our attributes are stored as lists and for processing purposes they needed to be their own rows.
-```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+
+```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
 # Create unique rows for each genre
 movieData <- unnest(movieData,Genre)
 movieData <- unnest(movieData, Writer)
@@ -594,14 +596,16 @@ movieData <- unnest(movieData, Country)
 ```
 
 Here we remove the rows with the NA genre because these cannot be classified:
-```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+
+```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
 movieData <- movieData[!(is.na(as.factor(movieData$Genre))),]
 movieData <- movieData[!movieData$Genre == "N/A",]
 movieData$Genre <- as.factor(movieData$Genre)
 ```
 
 Here we cast the string as factors so that the classification algorithms have the correct parameters:
-```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+
+```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
 # Cast as factor
 movieData$Rated <- as.factor(movieData$Rated)
 movieData$Title <- as.factor(movieData$Title)
@@ -617,7 +621,8 @@ movieData$Country <- as.factor(movieData$Country)
 ```
 
 Like in project I we assign training and test sets:
-```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+
+```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
 # Create test and training sets
 part <- createDataPartition(movieData$Genre,p=0.8,list=FALSE)
 training <- movieData[part,]
@@ -625,7 +630,8 @@ test <- movieData[-part,]
 ```
 
 Here are the classification algorithms we utilized, note we don't run the oblique method because it fails due to memory allocation:
-```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+
+```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
 #RIPPER CLASSIFIER
 ripperModelMovie <- JRip(Genre~., data = training)
 ripperPredictionsMovie <- predict(ripperModelMovie, movieDataWOutGenre)
@@ -664,7 +670,8 @@ knnCMMovie <- confusionMatrix(p, subset)
 ```
 
 Below prints the accuracies for each method used above in a table:
-```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE}
+
+```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE}
 accRipMovie <- ripCMMovie$overall[1]
 accC45Movie <- c45CMMovie$overall[1]
 accNBMovie <- nbCMMovie$overall[1]
@@ -675,9 +682,6 @@ colnames(accuracyMatrix) <- c("Movie Data Accuracies")
 rownames(accuracyMatrix) <- c("Ripper", "C4.5", "Naive Bayes", "KNN")
 accuracyMatrix <- as.table(accuracyMatrix)
 print(accuracyMatrix)
-```
-
-
 ```
 
 ## Clustering
@@ -758,6 +762,7 @@ The result of the cluster assignments are shown below.
 
 
 ## Association Rules
+
 When running apriori on the general subset produced 20 rules based on support values = 0.0001 and confidence = 0.9;
 
 ```
@@ -842,7 +847,7 @@ yielded the greatest accuracy. Extreme care was also put into formatting and pre
 **_Would clustering the movies into k' clusters where k' > k help in better categorization? And how._**
 
 In order to answer this question, we counted the quantity of unique genre combinations that were present in the dataset.
-```
+```{r eval=FALSE}
 # count unique genres
 length(unique(dataPruned))
 ```
@@ -872,8 +877,7 @@ I ran apriori (the only way that R was allowing me to run) with no variables set
 
 # Conclusion
 
-Future endeavors, build larger dataset, allow for k-folds sampling and cross-validation
-
+Regardless of the results, after the work done to tackle these data mining problems there are several clear avenues of approach for future endeavors. Ideally, a bigger dataset would be built, allowing for a greater variety of sampling methods to be applied, namely k-folds and stratified sampling. It seems apparent that the results for each task could have been improved by taking a stratified sample by movie years or even genres (for developing *usual casts*). Building a larger dataset could be done rather easily, it's primarily a question of time and resources. In the process of building the small "10K" dataset used here, the limiting factor was internet speed and availability, the risk of having a connection drop out mid web-sraping process prevented trying to run longer/larger python API-calls.
 # References & Resources
 
 The Internet Movie Database
