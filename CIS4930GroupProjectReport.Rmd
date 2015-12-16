@@ -539,10 +539,72 @@ unique(unlist(dataPruned))
 
 This resulted in 29 unique genre classes and therefore 29 clusters to use in cluster analysis.
 
+
+# Method and Materials
+
+## Genre Classification
+
+The task of genre prediction reflected the efforts made in Individual Project I. Using classification methods BLAH BLAH ANDA BLAH (to be fileld later just using blah blah blah to stick out to me), we hoped effectively predict the genre of a film based off its other
+characteristics. 
+
+One of the first steps in achieving this goal was first formatting the data in a way that was helpful and relevant to the task at hand. 
+For example, the imdbID attribute was removed from the dataset when creating the training and test sets since it was independent of
+predicting the genre of the film. 
+
+F-measures and confusino matrices with information will go here. 
+Reasons why we think it may not have worked as well as it should or as well as it did yada yada yada.
+
+Options....(WHAT SPECIFICALLY DOES HE MEAN?)
+When initially creating the datasets used for training and testing, there were many attributes that we had to utilize
+from IMDB. 
+Our options for classification included:
+1. imdbID             8. imdbVotes            15. imdbRating          22. Response
+2. Plot               9. seriesID             16. Poster              23. Year
+3. Rated              10. Season              17. Episode             24. Error
+4. Title              11. Director            18. Language            25. Producer
+5. Writer             12. Released            19. Country             26. Cinematographer
+6. Actors             13. Awards              20. Metascore           27. Composer
+7. Type               14. Genre               21. Runtime             28. CostumeDesigner
+
+Of the 28 options listed, at the end of the day only 12 attributes ended up being used for genre classification.
+These attributes are:
+
+1. Rated                  7. Cinematographer
+2. Title                  8. Genre
+3. Director               9. Writer
+4. Released               10. Actors
+5. Runtime                11. Country/Language
+6. Year                   12. Producer 
+ 
+The attributes that were removed were chosen because they were deemed irrelevant to determining the genre of a movie. Some of the attributes were subbed back into the overall data table to check and see if they affected the overall accuracy.
+
 For genre classification, the dataset was reduced down to 14 or less attributes depending on the specific run. The attributes 'Description', 'Rating', 'imdbVotes', 'seriesID', 'Season', 'Type', 'Awards', 'imdbRating', 'Poster', 'Episode', 'Released', 'imdbID', 'Metascore', 'Response', 'Language', and 'Country' were the attributes that were often removed from the dataset when running classification algorithms. These attributes were chosen because they were deemed irrelevant to determining the genre of a movie. Some of the attributes were subbed back into the overall data table to check and see if they affected the overall accuracy.
+
 Language and Country specifically were an interesting pair of attributes because they relayed very similar information so 
 either or were chosen to be used during classification.
-Released relayed almost identical information as the attribute 'Year' but was formatted as a date which threw off some of the classification algorithms, so it was removed as a result.
+Released relayed almost identical information as the attribute 'Year' but was formatted as a date which threw off some of the classification algorithms, so it was removed as a result.                             
+These attributes were chosen/kept because they provided unique insight on each genre and have values that would be
+indicative of a movie genre.
+
+With regards to classification methods, the methods we chose from were the same as the first individual project:
+RIPPER, C4.5, oblique trees, naive bayes, and the knn classifier.
+
+ADD MORE THINGS
+
+
+When it came to evaluating each of our classification techniques, we computed confusion matrices that provided useful
+metrics related to the success of our classifiers. 
+
+
+ADD MORE THINGS
+
+
+The measures we took to imporve the results as much as possible include trial and errror of which attribtues from the database
+yielded the greatest accuracy.
+
+• What were your options for classification?
+• How did you evaluate different classification techniques?
+• What measures have you taken to improve the results?
 
 ```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
 ##############################################################################################
