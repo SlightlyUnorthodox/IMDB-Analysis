@@ -161,6 +161,11 @@ saveRDS(test,file="test.rds")
 # For future use, make new data table without the genre label in it
 movieDataWOutGenre <- test[,-11]
 
+##################### TO DO
+# try making them factors
+#figure out if unnest is best way to go
+#try differnet attribute comobinations to seewhats best
+
 
 #RIPPER CLASSIFIER
 ripperModelMovie <- JRip(Genre~., data = training)
