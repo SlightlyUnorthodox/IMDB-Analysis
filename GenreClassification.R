@@ -33,7 +33,7 @@ movieData <- readRDS("clean10Kdataset.rds")
 names(movieData)
 
 # remove unneeded variables
-movieData <- movieData[,-c(1,2,7,8,9,10,13,15,16,17,18,21,22,24)]
+movieData <- movieData[,-c(1,2,6,7,8, 9, 12, 14, 15, 16, 17, 20, 21, 23, 30 ,31)]
 
 # confirm variable removal
 names(movieData)
@@ -44,10 +44,10 @@ names(movieData)
 #maybe need to use lapply we'll see
 #Retail_data[] <- lapply(Retail_data, factor)
 
-#country is going to be cut down to 2 items per list
-movieData$Country <- lapply(movieData$Country,"[",1:2)
+#country is going to be cut down to 1 country
+movieData$Country <- lapply(movieData$Country,"[",1)
 
-# Cut genre down to 3 items
+# Cut genre down to 2 items
 movieData$Genre <- lapply(movieData$Genre,"[",1:2)
 
 # Cleans writer entries
@@ -139,13 +139,26 @@ movieData$Cinematographer <- paste(firstName, lastName)
 # Create unique rows for each genre
 movieData <- unnest(movieData,Genre)
 movieData <- unnest(movieData, Writer)
-movieData <- unnest(movieData, Actors)
+#movieData <- unnest(movieData, Actors)
 movieData <- unnest(movieData, Country)
 
 # Drop rows with NA genre because we can't classify these
 movieData <- movieData[!(is.na(as.factor(movieData$Genre))),]
 movieData <- movieData[!movieData$Genre == "N/A",]
 movieData$Genre <- as.factor(movieData$Genre)
+
+# Cast as factor
+movieData$Rated <- as.factor(movieData$Rated)
+movieData$Title <- as.factor(movieData$Title)
+movieData$Director <- as.factor(movieData$Director)
+movieData$Actor1 <- as.factor(movieData$Actor1)
+movieData$Actor2 <- as.factor(movieData$Actor2)
+movieData$Actor3 <- as.factor(movieData$Actor3)
+movieData$Actor4 <- as.factor(movieData$Actor4)
+movieData$Producer <- as.factor(movieData$Producer)
+movieData$Cinematographer <- as.factor(movieData$Cinematographer)
+movieData$Writer <- as.factor(movieData$Writer)
+movieData$Country <- as.factor(movieData$Country)
 
 # Create test and training sets
 part <- createDataPartition(movieData$Genre,p=0.8,list=FALSE)
@@ -159,13 +172,12 @@ saveRDS(test,file="test.rds")
 ### TEST AND TRAINING SETS ARE A GO
 
 # For future use, make new data table without the genre label in it
-movieDataWOutGenre <- test[,-11]
+movieDataWOutGenre <- test[,-13]
 
 ##################### TO DO
 # try making them factors
 #figure out if unnest is best way to go
 #try differnet attribute comobinations to seewhats best
-
 
 #RIPPER CLASSIFIER
 ripperModelMovie <- JRip(Genre~., data = training)
@@ -173,6 +185,7 @@ ripperPredictionsMovie <- predict(ripperModelMovie, movieDataWOutGenre)
 # summarize results
 ripCMMovie <- confusionMatrix(ripperPredictionsMovie, test$Genre)
 
+names(movieData)
 
 #C4.5 CLASSIFICATION
 c45ModelMovie <- J48(Genre~., data = training)
@@ -208,36 +221,22 @@ knnCMMovie <- confusionMatrix(knnPredictions, test$Genre)
 ##############################################################################################
 #...............................CONFUSION MATRICES FOR IRIS...................................
 # RIPPER
-print(ripCMIris)
+print(ripCMMovie)
 
 #C4.5
-print(c45CMIris)
+print(c45CMMovie)
 
 #OBLIQUE
-print(obCMIris)
+print(obCMMovie)
 
 #NAIVE BAYES
-print(nbCMIris)
+print(nbCMMovie)
 
 #KNN
-print(knnCMIris)
+print(knnCMMovie)
 
-#.....................CONFUSION MATRICES FOR LIFE EXPECTANCY...................................
-#RIPPER
-print(ripCMLExpect)
 
-#C4.5
-print(c45CMLExpect)
-
-#OBLIQUE 
-print(obCMLExpect)
-
-#NAIVE BAYES
-print(nbCMLExpect)
-
-#KNN
-print(knnCM)
-
+################## IGNORE BELOW FOR NOW
 
 #get iris accuracies
 accRipIris <- ripCMIris$overall[1]
@@ -246,12 +245,6 @@ accOBIris <- obCMIris$overall[1]
 accNBIris <- nbCMIris$overall[1]
 accKNNIris <- knnCMIris$overall[1]
 
-#get life expectancy accuracies
-accRipLE <- ripCMLExpect$overall[1]
-accC45LE <- c45CMLExpect$overall[1]
-accOBLE <- obCMLExpect$overall[1]
-accNBLE <- nbCMLExpect$overall[1]
-accKNNLE <- knnCM$overall[1]
 
 accuracyMatrix <- matrix(c(accRipIris, accRipLE, accC45Iris, accC45LE, accOBIris, accOBLE, accNBIris, accNBLE, accKNNIris, accKNNLE), ncol = 2, byrow = TRUE)
 colnames(accuracyMatrix) <- c("Iris Data Accuracies", "Life Expectancy Data Accuracies")
