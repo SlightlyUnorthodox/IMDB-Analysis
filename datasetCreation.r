@@ -233,33 +233,52 @@ jsonToCsv <- function(filename = "imdb_30K_sample.json",write=TRUE,csvfile = "im
   data
 }
 
+# Runtime reformat, string -> minutes (integer)
+timeSet <- function(x) {
+  if(length(x == 2)) {
+    x = as.numeric(x) 
+  } else if (length(x == 4))  {
+    x = (as.numeric(substr(x,1,1))*60)+as.numeric(substr(x,2,3))
+  } else {
+    x = as.numeric("0")
+  }
+  x
+}
+
+
 # Clean data set, set proper types, drop invalid rows, 
 preprocessing <- function(data) {
+  
   # Step 1: Variable type checking
   
   # 1.1 Plot - char (fine as is)
+  
   # 1.2 Rated - factor (49 levels) (sparse)
   data$Rated <- as.factor(data$Rated)
+  data$Rated[data$Rated=="N/A"] <- NA
   summary(data$Rated)
   
   # 1.3 Title - char (fine as is)
   
   # 1.4 Writer - factor (>10000 levels)
   data$Writer <- as.factor(data$Writer)
+  data$Writer[data$Writer=="N/A"] <- NA
   summary(data$Writer)
   
-  # 1.5 Actors - list (will require more processing later)
+  # 1.5 Actors - list ==> factors
   data$Actors <- strsplit(data$Actors,", ")
   data$Actors <- sapply(data$Actors,'[',seq(max(sapply(data$Actors,length))),simplify=FALSE)
   data$Actors[1:5]
-
+  
   ### BEGIN ACTORS FIX
+  
+  # Description: Actors was broken into 4 columns (setting max number) and re-parsed as factors
   
   #Split actors to temp unique columns
   temp<- ldply(data$Actors)
   colnames(temp) <- c('Actor1','Actor2','Actor3','Actor4')
   
-  #Reassign actors
+  #Reassign actors to working data frame under new names ("Actor1","Actor2","Actor3","Actor4")
   data$Actor1 <- temp[1]
   data$Actor2 <- temp[2]
   data$Actor3 <- temp[3]
@@ -270,12 +289,6 @@ preprocessing <- function(data) {
   
   #Drop defunct actors column
   data <- data[,-c(5)]
-  
-  data$Writer <- as.factor(data$Writer)
-  data$Director <- as.factor(data$Director)
-  
-  data$Director[data$Director=="N/A"] <- NA
-  data$Writer[data$Writer=="N/A"] <- NA
   
   #Catch alternate NAs
   data$Actor1[data$Actor1=="N/A"] <- NA
@@ -293,8 +306,9 @@ preprocessing <- function(data) {
   
   # 1.6 Type - factor
   data$Type <- as.factor(data$Type)
+  data$Type[data$Type=="N/A"] <- NA
   summary(data$Type)
-
+  
   # 1.7 imdbVotes - numeric
   data$imdbVotes <- as.numeric(data$imdbVotes)
   summary(data$imdbVotes)
@@ -307,6 +321,8 @@ preprocessing <- function(data) {
   
   # 1.10 Director - factor (> 10000 levels)
   data$Director <- as.factor(data$Director)
+  data$Director[data$Director=="N/A"] <- NA
+  summary(data$Director)
   
   # 1.11 Released - date 
   data$Released <- as.Date(data$Released,"%d %b %Y")
@@ -336,7 +352,7 @@ preprocessing <- function(data) {
   data$Country <- sapply(data$Country,'[',seq(max(sapply(data$Country,length))),simplify=FALSE)
   data$Country[1:5]
   
-  # 1.19 Runtime (unfinished)
+  # 1.19 Runtime - numeric (calls setTime function to convert values)
   data$Runtime <- gsub("[^0-9]"," ",data$Runtime)
   for(i in 1:length(data$Runtime)) {
     data$Runtime[i] = timeSet(data$Runtime[i])
@@ -348,6 +364,7 @@ preprocessing <- function(data) {
   
   # 1.21 Metascore
   data$Metascore <- as.factor(data$Metascore)
+  data$Metascore[data$Metascore=="N/A"] <- NA
   levels(data$Metascore)
   
   # 1.22 Response (irrelevant)
@@ -363,7 +380,7 @@ preprocessing <- function(data) {
   # 2.1 Name columns
   temp <- read.csv("imdb_10K_cast_plus.csv",header=FALSE)
   colnames(temp) <- c("imdbID","Producer","Cinematographer","Composer","CostumeDesigners")
-
+  
   # 2.2 Format IDs to match
   temp$imdbID <- sapply(temp$imdbID,function(x) sprintf("%07d",x))
   temp$imdbID <- paste("tt",as.character(temp$imdbID),sep="")
