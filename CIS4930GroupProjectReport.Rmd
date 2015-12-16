@@ -489,19 +489,9 @@ One last visualization provides the distribution of movie runtimes over the year
 qplot(Year,Runtime,data=stats)
 ```
 
-# Method and Materials
+## Quantitative Analysis
 
-## Clustering
-For cluster analysis, the dataset was reduced to included just the 'Genre' attribute. This was chosen because we believed it had the strongest correlation to grouping similar movies, as well as convenience to match the number of clusters (instructed to be equal to the number of genres). 
-
-```{r, eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
-# Load dataset
-data <- readRDS("clean10Kdataset.rds")
-
-#subset dataset to Genre list
-dataGenre <- data[, 13]
-```
-
+### Clustering
 The unique genre classes were then found by performing a pruning of the initial genre data.
 ```{r, eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
 #Prune the data to remove excess collection space
@@ -524,6 +514,21 @@ unique(unlist(dataPruned))
 
 This resulted in 29 unique genre classes and therefore, 29 clusters to use in analysis.
 
+
+# Method and Materials
+
+## Clustering
+For cluster analysis, the dataset was reduced to included just the 'Genre' attribute. This was chosen because we believed it had the strongest correlation to grouping similar movies, as well as convenience to match the number of clusters (instructed to be equal to the number of genres). 
+
+```{r, eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+# Load dataset
+data <- readRDS("clean10Kdataset.rds")
+
+#subset dataset to Genre list
+dataGenre <- data[, 13]
+```
+
+As mentioned above, we found 29 distinct genres to use as clusters. This included "N/A" as a genre. 
 We then created a matrix which mapped out the individual existence of the genre type to that movie.
 
 -- Insert picture here --
@@ -538,12 +543,21 @@ kmeanCluster <- kmeans(distanceMatrix, 29)
 distanceMatrix$cluster <- as.factor(kmeanCluster$cluster)
 ```
 
+On our second attempt, we instead weighted the values of the distance matrix for each movie as a percentage.
+For example: If a movie was classified as 'Short' and 'Comedy', its weight would then be 0.5 in 'Short' and 0.5 in 'Comedy'.
+
+-- Insert other distance matrix photo --
+
+
 # Results
 
 ## Clustering
 The result of the cluster assignments are shown below.
 
--- Insert other analysis of kCluster output --
+-- Insert analysis of kCluster output (original)--
+-- withinss, centers, size, etc --
+
+-- Insert analysis of 2nd kCluster output ("good" one)--
 -- withinss, centers, size, etc --
 
 
