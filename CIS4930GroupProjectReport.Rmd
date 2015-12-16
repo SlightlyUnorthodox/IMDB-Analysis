@@ -543,6 +543,277 @@ This resulted in 29 unique genre classes and therefore 29 clusters to use in clu
 
 
 # Method and Materials
+
+## Genre Classification
+
+For genre classification, the dataset was reduced down to 14 or less attributes depending on the specific run. The attributes 'Description', 'Rating', 'imdbVotes', 'seriesID', 'Season', 'Type', 'Awards', 'imdbRating', 'Poster', 'Episode', 'Released', 'imdbID', 'Metascore', 'Response', 'Language', and 'Country' were the attributes that were often removed from the dataset when running classification algorithms. These attributes were chosen because they were deemed irrelevant to determining the genre of a movie. Some of the attributes were subbed back into the overall data table to check and see if they affected the overall accuracy.
+Language and Country specifically were an interesting pair of attributes because they relayed very similar information so 
+either or were chosen to be used during classification.
+Released relayed almost identical information as the attribute 'Year' but was formatted as a date which threw off some of the classification algorithms, so it was removed as a result.
+
+```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+##############################################################################################
+#                                   Dynamically Load/Install Packages
+##############################################################################################
+#Dynamically load/install required packages
+ready <- FALSE
+loadPackages3 <- function() {
+  if( require(R.utils) == FALSE) { install.packages("R.utils") }
+  if( require(tidyr) == FALSE) { install.packages("tidyr") }
+  if( require(dplyr) == FALSE) { install.packages("dplyr") }
+  if( require(e1071) == FALSE) { install.packages("e1071") }
+  if( require(kknn) == FALSE) { install.packages("klaR")}
+  if( require(RWeka) == FALSE) { install.packages("RWeka") }
+  if( require(oblique.tree) == FALSE) { install.packages("oblique.tree") }
+  if (require(caret) == FALSE) { install.packages("caret") }
+  ready <- TRUE
+}
+while(ready == FALSE) { ready <- loadPackages3() }
+
+set.seed(1911)
+
+##############################################################################################
+#                                   IMDB DATA SET
+##############################################################################################
+
+#access the imdb data set we created
+movieData <- readRDS("clean10Kdataset.rds")
+
+# clean up the movie data set
+# description, rating, imdbVotes, seriesID, season, type, awards, imdbRating, Poster, episode, released, imdbID, Metascore, response, language, and year
+# were removed from table for analysis because they did not provide information helpful to classification
+
+# check variables
+names(movieData)
+
+# remove unneeded variables
+movieData <- movieData[,-c(1,2,6,7,8, 9, 11, 12, 14, 15, 16, 17, 20, 21, 23, 30 ,31)]
+
+# confirm variable removal
+names(movieData)
+
+# now are datasets contain only the important variables pertinent to classification
+# episodes taken about because all values are N/A for this dataset
+
+#maybe need to use lapply we'll see
+#Retail_data[] <- lapply(Retail_data, factor)
+
+#country is going to be cut down to 1 country
+movieData$Country <- lapply(movieData$Country,"[",1)
+
+# Cut genre down to 2 items
+movieData$Genre <- lapply(movieData$Genre,"[",1:2)
+
+# Cleans writer entries
+movieData$Writer <- lapply(movieData$Writer, function(x) {
+  gsub( " *\\(.*?\\) *", "", x)
+  })
+
+tgemp <- movieData
+
+# Reordering first and last name and removing exraneous separators
+# First step is to remove single quote and double quotes
+# yes, soempeople's name may have a single quote in it however numbers are so small
+# it wont affect the data
+
+###################################### fix producer ######################################
+
+# single quote removal
+movieData$Producer <- lapply(movieData$Producer, function(x){
+  gsub("\'", "", x)#
+})
+
+# double quote removal
+movieData$Producer <- lapply(movieData$Producer, function(x){
+  gsub("\"", "", x)#
+})
+
+# remove brackets
+movieData$Producer <- lapply(movieData$Producer, function(x){
+  gsub("\\[", "", x)#
+})
+
+movieData$Producer <- lapply(movieData$Producer, function(x){
+  gsub("\\]", "", x)#
+})
+
+movieData$Producer <- lapply(movieData$Producer, function(x){
+strsplit(x,",")
+})
+
+firstName <- lapply(movieData$Producer, function(x){
+ x[[1]][2]
+})
+
+lastName <- lapply(movieData$Producer, function(x){
+  x[[1]][1]
+})
+
+movieData$Producer <- paste(firstName, lastName)
+
+########################## end fixing of producer ########################
+
+###################################### fix cinematographer ######################################
+
+# single quote removal
+movieData$Cinematographer <- lapply(movieData$Cinematographer, function(x){
+  gsub("\'", "", x)#
+})
+
+# double quote removal
+movieData$Cinematographer <- lapply(movieData$Cinematographer, function(x){
+  gsub("\"", "", x)#
+})
+
+# remove brackets
+movieData$Cinematographer <- lapply(movieData$Cinematographer, function(x){
+  gsub("\\[", "", x)#
+})
+
+movieData$Cinematographer <- lapply(movieData$Cinematographer, function(x){
+  gsub("\\]", "", x)#
+})
+
+movieData$Cinematographer <- lapply(movieData$Cinematographer, function(x){
+  strsplit(x,",")
+})
+
+firstName <- lapply(movieData$Cinematographer, function(x){
+  x[[1]][2]
+})
+
+lastName <- lapply(movieData$Cinematographer, function(x){
+  x[[1]][1]
+})
+
+movieData$Cinematographer <- paste(firstName, lastName)
+
+########################## end fixing of Cinematographer ########################
+
+# Create unique rows for each genre
+movieData <- unnest(movieData,Genre)
+movieData <- unnest(movieData, Writer)
+#movieData <- unnest(movieData, Actors)
+movieData <- unnest(movieData, Country)
+
+# Drop rows with NA genre because we can't classify these
+movieData <- movieData[!(is.na(as.factor(movieData$Genre))),]
+movieData <- movieData[!movieData$Genre == "N/A",]
+movieData$Genre <- as.factor(movieData$Genre)
+
+# Cast as factor
+movieData$Rated <- as.factor(movieData$Rated)
+movieData$Title <- as.factor(movieData$Title)
+movieData$Director <- as.factor(movieData$Director)
+movieData$Actor1 <- as.factor(movieData$Actor1)
+movieData$Actor2 <- as.factor(movieData$Actor2)
+movieData$Actor3 <- as.factor(movieData$Actor3)
+movieData$Actor4 <- as.factor(movieData$Actor4)
+movieData$Producer <- as.factor(movieData$Producer)
+movieData$Cinematographer <- as.factor(movieData$Cinematographer)
+movieData$Writer <- as.factor(movieData$Writer)
+movieData$Country <- as.factor(movieData$Country)
+
+# Create test and training sets
+part <- createDataPartition(movieData$Genre,p=0.8,list=FALSE)
+training <- movieData[part,]
+test <- movieData[-part,]
+
+# Save training/test data for later
+saveRDS(training,file="training.rds")
+saveRDS(test,file="test.rds")
+
+
+# For future use, make new data table without the genre label in it
+movieDataWOutGenre <- test[,-12]
+
+#RIPPER CLASSIFIER
+ripperModelMovie <- JRip(Genre~., data = training)
+ripperPredictionsMovie <- predict(ripperModelMovie, movieDataWOutGenre)
+# summarize results
+ripCMMovie <- confusionMatrix(ripperPredictionsMovie, test$Genre)
+
+names(movieData)
+
+#C4.5 CLASSIFICATION
+c45ModelMovie <- J48(Genre~., data = training)
+c45ModelPredictionsMovie <- predict(c45ModelMovie, test[,-12])
+c45CMMovie <- confusionMatrix(c45ModelPredictionsMovie, test$Genre)
+
+
+#OBLIQUE CLASSIFICATION 
+obliqueModelMovie <- oblique.tree(formula = Genre~., data = training, oblique.splits = "only")
+obliqueModelPredictionsMovie <- predict(obliqueModelMovie, test)
+obCMMovie <- confusionMatrix(colnames(obliqueModelPredictionsMovie)[max.col(obliqueModelPredictionsMovie)], test$Genre)
+
+
+#NAIVE BAYES CLASSIFIER
+# train a naive bayes model
+naiveBayesModel <- naiveBayes(Genre~., data=training)
+# make predictions
+#look at this
+predictions <- predict(naiveBayesModel, movieDataWOutGenre) 
+# summarize results
+nbCMMovie <- confusionMatrix(predictions, test$Genre)
+
+
+#KNN CLASSIFIER
+#lets try getting rid of NA values
+subset <- test$Genre[1:245]
+kkModel <- kknn(Genre~., test = test, train = training, distance = 1, kernel = "triangular")
+p <- predict(kkModel, movieDataWOutGenre)
+knnCMMovie <- confusionMatrix(p, subset)
+
+
+
+##############################################################################################
+#                             FINAL DISPLAYED RESULTS
+##############################################################################################
+
+#below prints the accuracies for each method used above in a table
+
+accRipMovie <- ripCMMovie$overall[1]
+accC45Movie <- c45CMMovie$overall[1]
+accNBMovie <- nbCMMovie$overall[1]
+accKNNMovie <- knnCMMovie$overall[1]
+
+accuracyMatrix <- matrix(c(accRipMovie, accC45Movie, accNBMovie, accKNNMovie), ncol = 1, byrow = TRUE)
+colnames(accuracyMatrix) <- c("Movie Data Accuracies")
+rownames(accuracyMatrix) <- c("Ripper", "C4.5", "Naive Bayes", "KNN")
+accuracyMatrix <- as.table(accuracyMatrix)
+print(accuracyMatrix)
+
+#...............................CONFUSION MATRICES FOR EACH MOVIE CLASSIFIER...................................
+#if you wish to view a confusion matrix individual highlight print statement and run
+# RIPPER
+print(ripCMMovie)
+
+#C4.5
+print(c45CMMovie)
+
+#OBLIQUE
+print(obCMMovie)
+
+#NAIVE BAYES
+print(nbCMMovie)
+
+#KNN
+print(knnCMMovie)
+
+```
+
+
+
+# clean up the movie data set
+# description, rating, imdbVotes, seriesID, season, type, awards, imdbRating, Poster, episode, released, imdbID, Metascore, response, language, and year
+# were removed from table for analysis because they did not provide information helpful to classification
+
+# check variables
+names(movieData)
+
+# remove unneeded variables
+movieData <- movieData[,-c(1,2,6,7,8, 9, 11, 12, 14, 15, 16, 17, 20, 21, 23, 30 ,31)]
+
 ## Clustering
 For cluster analysis, the dataset was reduced to included just the 'Genre' attribute. This was chosen because we believed it had the strongest correlation to grouping similar movies, as well as convenience to match the number of clusters (instructed to be equal to the number of genres). 
 
