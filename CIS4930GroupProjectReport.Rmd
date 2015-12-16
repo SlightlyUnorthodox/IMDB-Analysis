@@ -491,10 +491,60 @@ qplot(Year,Runtime,data=stats)
 
 # Method and Materials
 
+## Clustering
+For cluster analysis, the dataset was reduced to included just the 'Genre' attribute. This was chosen because we believed it had the strongest correlation to grouping similar movies, as well as convenience to match the number of clusters (instructed to be equal to the number of genres). 
 
+```{r, eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+# Load dataset
+data <- readRDS("clean10Kdataset.rds")
+
+#subset dataset to Genre list
+dataGenre <- data[, 13]
+```
+
+The unique genre classes were then found by performing a pruning of the initial genre data.
+```{r, eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+#Prune the data to remove excess collection space
+dataPruned <- lapply(dataGenre, function(x) {
+  # Make the collection 'unique', removing all the blank collection spots
+  x <- unique(x)
+  
+  # chop off the last 'NA' value
+  x <- x[-length(x)]
+ 
+})
+```
+
+Then listing the results.
+
+```{r, eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+#list unique genre entries
+unique(unlist(dataPruned))
+```
+
+This resulted in 29 unique genre classes and therefore, 29 clusters to use in analysis.
+
+We then created a matrix which mapped out the individual existence of the genre type to that movie.
+
+-- Insert picture here --
+
+Using kMeans, we performed a distance based cluster analysis and appended its results to the matrix.
+
+```{r, eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+# kmean cluster with k = 29 clusters (genres)
+kmeanCluster <- kmeans(distanceMatrix, 29)
+
+# append cluster number result to matrix
+distanceMatrix$cluster <- as.factor(kmeanCluster$cluster)
+```
 
 # Results
 
+## Clustering
+The result of the cluster assignments are shown below.
+
+-- Insert other analysis of kCluster output --
+-- withinss, centers, size, etc --
 
 
 # Discussion
