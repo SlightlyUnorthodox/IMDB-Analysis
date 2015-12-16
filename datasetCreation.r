@@ -80,7 +80,7 @@ exploreData <- function(choice,length = 50) {
 # Runtime: __ on 8GB of memmory
 # Parameter: size of dataset, default 10,000 movies
 #   NOTE: size must be <= size of dataset/2
-buildDataset <- function(size = 10000) {
+DEPRICATEDbuildDataset <- function(size = 10000) {
   
   #
   # MOVIES
@@ -268,7 +268,6 @@ preprocessing <- function(data) {
   
   # 1.10 Director - factor (> 10000 levels)
   data$Director <- as.factor(data$Director)
-  levels(data$Director)
   
   # 1.11 Released - date 
   data$Released <- as.Date(data$Released,"%d %b %Y")
@@ -320,18 +319,40 @@ preprocessing <- function(data) {
   
   # 1.24 Error (fine as is, meaningless)
   
-  # 2 Prepare valid data
+  # 2 Load and prep extra cast values
   
-  # 2.1 Drop non-movie entries
+  # 2.1 Name columns
+  temp <- read.csv("imdb_10K_cast_plus.csv",header=FALSE)
+  colnames(temp) <- c("imdbID","Producer","Cinematographer","Composer","CostumeDesigners")
+
+  # 2.2 Format IDs to match
+  temp$imdbID <- sapply(temp$imdbID,function(x) sprintf("%07d",x))
+  temp$imdbID <- paste("tt",as.character(temp$imdbID),sep="")
+  
+  # 2.3 Merge new values to table
+  data <- merge(data,temp,by="imdbID",all=TRUE)
+  
+  # 2.4 Format new variables
+  data$Producer <- as.factor(data$Producer)
+  data$Cinematographer <- as.factor(data$Cinematographer)
+  data$Composer <- as.factor(data$Composer)
+  data$CostumeDesigners <- as.factor(data$CostumeDesigners)
+  # 3 Prepare valid data
+  
+  # 3.1 Drop non-movie entries
   data <- data[data$Type == "movie",]
   
-  # 2.2 Drop bad/"N/A" entries
+  # 3.2 Drop bad/"N/A" entries
   data <- data[!(is.na(as.factor(data$Title))),]
   
-  # 2.3 Save table as R object
+  # 3.3 Save table as R object
   saveRDS(data,"clean10Kdataset.rds")
   
-  # 2.4 Return output table
+  # 3.4 Write clean csv
+  csvData <- data.frame(lapply(data,as.character),stringsAsFactors=FALSE)
+  write.csv(csvData,file="clean10Kdataset.csv",row.names = FALSE)
+  
+  # 3.5 Return output table
   data
 }
 

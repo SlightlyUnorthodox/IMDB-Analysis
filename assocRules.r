@@ -1,44 +1,85 @@
 # Project: CIS4930 Group Project
-# Authors: Dax Gerts, ...
+# Authors: Dax Gerts, Denzel
 # Date: 23 November 2015
 # Description: Procedure for detecting "usual casts" (association rule mining)
 
+#Source data prep files
+# source('datasetCreation.r')
+
 #Dynamically load/install required packages
+
 ready <- FALSE
-loadPackages4 <- function() {
-  if( require(R.utils) == FALSE) { install.packages("R.utils") }
-  
+loadPackages3 <- function() {
+  if( require(arules) == FALSE) { install.packages("arules") }
+  if( require(reshape2) == FALSE) { install.packages("reshape2") }
+  if( require(stringr) == FALSE) { install.packages("stringr") }
+  if( require(plyr) == FALSE) { install.packages("dplyr")}
   ready <- TRUE
 }
-while(ready == FALSE) { ready <- loadPackages4() }
+while(ready == FALSE) { ready <- loadPackages3() }
+
+set.seed(7131)
+
+#define redundant rules function
+redundantRules <- function(rules) {
+  sub <- is.subset(rules,rules)
+  sub[lower.tri(sub,diag=T)] <- NA
+  red <- colSums(sub,na.rm=T) >= 1
+  rrules <- rules[!red]
+  rrules
+} 
+
 
 # Load dataset/subset dataset
-#
-#
-# Must contain (directors,authors/writers,producers/actors,actresses,etc.)
-#
+assocData <- readRDS("clean10Kdataset.rds")
 
+# Remove columns not worthy of analysis
+assocDataSubset <- assocData[,c(5,6,11)]
 
+#Split actors to temp unique columns
+temp<- ldply(assocDataSubset$Actors)
+colnames(temp) <- c('Actor1','Actor2','Actor3','Actor4')
 
-# Go forth and find interesting rules
-#
-#
-#
-#
-#
-#
+#Reassign actors
+assocDataSubset$Actor1 <- temp[1]
+assocDataSubset$Actor2 <- temp[2]
+assocDataSubset$Actor3 <- temp[3]
+assocDataSubset$Actor4 <- temp[4]
 
+#Delete temporary data frame
+rm(temp)
 
-# Results for this part depend on...
+#Drop defunct actors column
+assocDataSubset <- assocDataSubset[,-c(2)]
 
-# The number of different roles you have in your dataset.
+assocDataSubset$Writer <- as.factor(assocDataSubset$Writer)
+assocDataSubset$Director <- as.factor(assocDataSubset$Director)
 
-# What you put in the left-hand-side of the rules.
+assocDataSubset$Director[assocDataSubset$Director=="N/A"] <- NA
+assocDataSubset$Writer[assocDataSubset$Writer=="N/A"] <- NA
 
-# How you would automatically check all the possibilities.
+#Catch alternate NAs
+assocDataSubset$Actor1[assocDataSubset$Actor1=="N/A"] <- NA
+assocDataSubset$Actor2[assocDataSubset$Actor2=="N/A"] <- NA
+assocDataSubset$Actor3[assocDataSubset$Actor3=="N/A"] <- NA
+assocDataSubset$Actor4[assocDataSubset$Actor4=="N/A"] <- NA
 
-# Moreover, provide some rules which indicate the relation between genre and the cast. You
-#should explain why this finding is aligned (or not) with your results for the genre prediction
-#part.
+#Unlist and set actors as factors
+assocDataSubset$Actor1 <- as.factor(unlist(assocDataSubset$Actor1))
+assocDataSubset$Actor2 <- as.factor(unlist(assocDataSubset$Actor2))
+assocDataSubset$Actor3 <- as.factor(unlist(assocDataSubset$Actor3))
+assocDataSubset$Actor4 <- as.factor(unlist(assocDataSubset$Actor4))
+
+#Build ruleset
+movieRules <- apriori(assocDataSubset,parameter = list(support = 0.0001,confidence = 0.9))
+inspect(head(movieRules))
+
+#Removes redundant rules
+uniqueMovieRules <- redundantRules(movieRules)
+#inspect(titanicUniqBetterRulesApriori)
+
+#Sorts trimmed rules by lift
+sortedUniqueMovieRules <- sort(uniqueMovieRules, by = "lift")
+inspect(head(sortedUniqueMovieRules,40))
 
 

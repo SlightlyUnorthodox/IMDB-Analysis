@@ -1,24 +1,21 @@
 ##############################################################################################
-#                                     INSTALLS
+#                                   Dynamically Load/Install Packages
 ##############################################################################################
-#install.packages("e1071")
-#install.packages("kknn")
-#install.packages("klaR")
-install.packages("caret")
-#install.packages("RWeka")
-#install.packages("oblique.tree")
-#install.packages("base")
 
+#Dynamically load/install required packages
+ready <- FALSE
+loadPackages3 <- function() {
+  if( require(R.utils) == FALSE) { install.packages("R.utils") }
+  if( require(e1071) == FALSE) { install.packages("e1071") }
+  if( require(kknn) == FALSE) { install.packages("klaR")}
+  if( require(RWeka) == FALSE) { install.packages("RWeka") }
+  if( require(oblique.tree) == FALSE) { install.packages("oblique.tree") }
+  if (require(caret) == FALSE) { install.packages("caret") }
+  ready <- TRUE
+}
+while(ready == FALSE) { ready <- loadPackages3() }
 
-##############################################################################################
-#                                    LIBRARY CALLS
-##############################################################################################
-library(klaR)
-#Caret is the main library in which other libraries pull from for the method calls to classify the data sets
-library(caret)
-library(kknn)
-library(oblique.tree)
-
+set.seed(7131)
 
 ##############################################################################################
 #                                   IMDB DATA SET
@@ -31,26 +28,14 @@ movieData <- readRDS("clean10Kdataset.rds")
 # description, rating, imdbVotes, seriesID, season, type, awards, imdbRating, Poster, episode, imdbID, Metascore, response, and year
 # were removed from table for analysis because they did not provide information helpful to classification
 
-# removes description and rated variables
-movieData <- movieData[3:24]
+# check variables
+names(movieData)
 
-# removes the rest of the variables we dont care for
-movieData <- movieData[,-4] 
-movieData <- movieData[,-4]
-movieData <- movieData[,-4]
-movieData <- movieData[,-4]
+# remove unneeded variables
+movieData <- movieData[,c(3,4,5,10,11,13,17,18,19,23)]
 
-movieData <- movieData[,-6]
-
-movieData <- movieData[,-7]
-movieData <- movieData[,-7]
-movieData <- movieData[,-7]
-
-movieData <- movieData[,-10]
-movieData <- movieData[,-10]
-movieData <- movieData[,-10]
-movieData <- movieData[,-11]
-
+# confirm variable removal
+names(movieData)
 
 # now are datasets contain only the important variables pertinent to classification
 # episodes taken about because all values are N/A for this dataset
@@ -58,41 +43,38 @@ movieData <- movieData[,-11]
 #maybe need to use lapply we'll see
 #Retail_data[] <- lapply(Retail_data, factor)
 
+#country is going to be cut down to 2 items per list
+movieData$Country <- lapply(movieData$Country,"[",1:2)
 
-noParentheses <- lapply(movieData$Writer, function(x) {
+# Language is going to be cut down to 2 items as well
+movieData$Language <- lapply(movieData$Language,"[",1:2)
+
+# Cut genre down to 3 items
+movieData$Genre <- lapply(movieData$Genre,"[",1:2)
+
+# Cleans writer variables
+movieData$Writer <- lapply(movieData$Writer, function(x) {
   gsub( " *\\(.*?\\) *", "", x)
   })
 
-movieData$Writer <- noParentheses
+# Create unique rows for each genre
+movieData <- unnest(movieData,Genre)
 
+# Drop rows with NA genre
+movieData <- movieData[!(is.na(as.factor(movieData$Genre))),]
+movieData <- movieData[!movieData$Genre == "N/A",]
+movieData$Genre <- as.factor(movieData$Genre)
 
+# Create test and training sets
+part <- createDataPartition(movieData$Genre,p=0.8,list=FALSE)
+training <- movieData[part,]
+test <- movieData[-part,]
 
-createTestMovieSet <- function(dataset,classifier) {
-  #set seed, said first digits of UF ID so i used the first 4
-  set.seed(1911)
-  
-  #create partition space only want 20% for testing
-  part <- createDataPartition(classifier, p=0.8, list=FALSE)
-  test <-dataset[-part,]
-  test
-}
+# Save training/test data for later
+saveRDS(training,file="training.rds")
+saveRDS(test,file="test.rds")
 
-
-createTrainingMovieSet <- function(dataset,classifier) {
-  #set seed, said first digits of UF ID so i used the first 4
-  set.seed(1911)
-  
-  #create partition space only want 80% for testing
-  part <- createDataPartition(classifier, p=0.8, list=FALSE)
-  training <-dataset[part,]
-  training
-}
-
-#setting variables for the train and test sets
-testDataMovie = createTestMovieSet(movieData, movieData$Genre)
-trainingDataMovie = createTrainingMovieSet(movieData, movieData$Genre)
-
-############################ TO DOS ##################################
+############################ TO DO'S ##################################
 #once testData is successfully created, need to go in and change -6 to appropriate value to create test data 
 #that does not contain attribute genre to replace in the predict methods below where you see testDataMovie[,1:4]
 
