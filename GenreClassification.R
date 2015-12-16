@@ -31,26 +31,14 @@ movieData <- readRDS("clean10Kdataset.rds")
 # description, rating, imdbVotes, seriesID, season, type, awards, imdbRating, Poster, episode, imdbID, Metascore, response, and year
 # were removed from table for analysis because they did not provide information helpful to classification
 
-# removes description and rated variables
-movieData <- movieData[3:24]
+# check variables
+names(movieData)
 
-# removes the rest of the variables we dont care for
-movieData <- movieData[,-4] 
-movieData <- movieData[,-4]
-movieData <- movieData[,-4]
-movieData <- movieData[,-4]
+# remove unneeded variables
+movieData <- movieData[,c(3,4,5,10,11,13,17,18,19,23)]
 
-movieData <- movieData[,-6]
-
-movieData <- movieData[,-7]
-movieData <- movieData[,-7]
-movieData <- movieData[,-7]
-
-movieData <- movieData[,-10]
-movieData <- movieData[,-10]
-movieData <- movieData[,-10]
-movieData <- movieData[,-11]
-
+# confirm variable removal
+names(movieData)
 
 # now are datasets contain only the important variables pertinent to classification
 # episodes taken about because all values are N/A for this dataset
@@ -59,34 +47,28 @@ movieData <- movieData[,-11]
 #Retail_data[] <- lapply(Retail_data, factor)
 
 #country is going to be cut down to 2 items per list
-twoCountries <- lapply(movieData$Country, function(x) {
-  x <- x[1:2]
-})
-
-movieData$Country <- twoCountries
+movieData$Country <- lapply(movieData$Country,"[",1:2)
 
 # Language is going to be cut down to 2 items as well
-twoLanguages <- lapply(movieData$Language, function(x){
-  x <- x[1:2]
-})
-
-movieData$Language <- twoLanguages
+movieData$Language <- lapply(movieData$Language,"[",1:2)
 
 # Cut genre down to 3 items
-threeGenres <- lapply(movieData$Genre, function(x){
-  x <- x[1:3]
-})
+movieData$Genre <- lapply(movieData$Genre,"[",1:2)
 
-movieData$Genre <- threeGenres
-
-
+# Cleans writer variables
 noParentheses <- lapply(movieData$Writer, function(x) {
   gsub( " *\\(.*?\\) *", "", x)
   })
 
+# Create unique rows for each genre
+movieData <- unnest(movieData,Genre)
+
+# Drop rows with NA genre
+movieData <- movieData[!(is.na(as.factor(movieData$Genre))),]
+
+# Create test and training sets
+
 movieData$Writer <- noParentheses
-
-
 
 createTestMovieSet <- function(dataset,classifier) {
   #set seed, said first digits of UF ID so i used the first 4
