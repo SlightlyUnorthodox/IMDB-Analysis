@@ -4,7 +4,7 @@
 # Description: Procedure for detecting "usual casts" (association rule mining)
 
 #Source data prep files
-source('datasetCreation.r')
+# source('datasetCreation.r')
 
 #Dynamically load/install required packages
 
@@ -13,7 +13,7 @@ loadPackages3 <- function() {
   if( require(arules) == FALSE) { install.packages("arules") }
   if( require(reshape2) == FALSE) { install.packages("reshape2") }
   if( require(stringr) == FALSE) { install.packages("stringr") }
-  if( require(dplyr) == FALSE) { install.packages("dplyr")}
+  if( require(plyr) == FALSE) { install.packages("dplyr")}
   ready <- TRUE
 }
 while(ready == FALSE) { ready <- loadPackages3() }
@@ -24,7 +24,7 @@ set.seed(7131)
 assocData <- readRDS("clean10Kdataset.rds")
 
 # Remove columns not worthy of analysis
-assocDataSubset <- assocData[,c(4,5,10)]
+assocDataSubset <- assocData[,c(5,6,11)]
 
 #Split actors to temp unique columns
 temp<- ldply(assocDataSubset$Actors)
@@ -45,20 +45,7 @@ assocDataSubset <- assocDataSubset[,-c(2)]
 assocDataSubset$Writer <- as.factor(assocDataSubset$Writer)
 assocDataSubset$Director <- as.factor(assocDataSubset$Director)
 
-#assocDataSubset$Actor1 <- gsub('^c\\(','',assocDataSubset$Actor1)
-#assocDataSubset$Actor4 <- gsub('\\)\\s*$','',assocDataSubset$Actor4)
-
-#assocDataSubset$Actor1 <- as.character(assocDataSubset$Actor1)
-#assocDataSubset$Actor2 <- as.character(assocDataSubset$Actor2)
-#assocDataSubset$Actor3 <- as.character(assocDataSubset$Actor3)
-#assocDataSubset$Actor4 <- as.character(assocDataSubset$Actor4)
-
-
-# assocDataSubset$Actor1 <- as.factor(assocDataSubset$Actor1)
-# assocDataSubset$Actor2 <- as.factor(assocDataSubset$Actor2)
-# assocDataSubset$Actor3 <- as.factor(assocDataSubset$Actor3)
-# assocDataSubset$Actor4 <- as.factor(assocDataSubset$Actor4)
-
+assocDataSubset$Actor1 <- as.factor(assocDataSubset$Actor2)
 
 assocDataSubset$Director[assocDataSubset$Director=="N/A"] <- NA
 assocDataSubset$Writer[assocDataSubset$Writer=="N/A"] <- NA
@@ -68,6 +55,11 @@ assocDataSubset$Actor2[assocDataSubset$Actor2=="N/A"] <- NA
 assocDataSubset$Actor3[assocDataSubset$Actor3=="N/A"] <- NA
 assocDataSubset$Actor4[assocDataSubset$Actor4=="N/A"] <- NA
 
+sapply(unlist(assocDataSubset$Actor1, recursive = TRUE, use.names = TRUE))
+sapply(unlist(assocDataSubset$Actor2, recursive = TRUE, use.names = TRUE))
+sapply(unlist(assocDataSubset$Actor3, recursive = TRUE, use.names = TRUE))
+sapply(unlist(assocDataSubset$Actor4, recursive = TRUE, use.names = TRUE))
 
 
+dataFiltered <- apriori(assocDataSubset, support=0.1, confidence= 0.2)
 
