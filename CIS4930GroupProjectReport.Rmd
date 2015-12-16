@@ -20,14 +20,20 @@ Source No. 1
 'Automatic Video Classification: A Survey of the Literature' by Darin Brezeale and Diane J. Cook, Senior Member, IEEE
 IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS, VOL. UNKNOWN, NO. UNKNOWN, UNKNOWN 2007
 
-
+This source is an analysis of the different methods and areas of interest related to classifying videos by a genre. This
+paper uses more video based processing in order to classify footage from movies or their trailers by genre or type. While this paper uses
+attributes and features along the lines of optical flow, pixel clustering, and image histogram differences, it demonstrates 
+that other features besides facts about the movie can be used to classify genres. 
+While our project did not involve any video/image processing or computer vision algorithms, I think it nciely demonstrates
+that there are many "out of the box" attributes and features that can be used as classification attributes. Our takeaway from this 
+paper is to always be thinking of all the different kinds features or traits that can be used for classifcation problems.
 
 
 Source No. 2
 'Predicting Movie Success Based on IMDB Data' by Nithin VR, Pranav M, Sarath Babu PB, and Lijiya A
 International Journal of Data Mining Techniques and Applications Volume: 03, June 2014, Pages: 365-368 
 
-This source investigated if there was a way to predict monetary success and high ratings using the data from IMDB. Both our project
+This source investigated Rif there was a way to predict monetary success and high ratings using the data from IMDB. Both our project
 and the work completed in the source used the same source data files pulled from IMDB. However the data utilized differs between us.
 The people in the paper selected only movies from 2000 to 2012 and ones that were in English and from the US, whereas our data was
 from a longer timespan and not limited to the other constraints. For the sake of more accurate results, we could do what they did and strategically pick subsets of attributes for processing. They also only selected data with available box office gross data, 
