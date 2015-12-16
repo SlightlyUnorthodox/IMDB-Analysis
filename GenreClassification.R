@@ -1,11 +1,12 @@
 ##############################################################################################
 #                                   Dynamically Load/Install Packages
 ##############################################################################################
-
 #Dynamically load/install required packages
 ready <- FALSE
 loadPackages3 <- function() {
   if( require(R.utils) == FALSE) { install.packages("R.utils") }
+  if( require(tidyr) == FALSE) { install.packages("tidyr") }
+  if( require(dplyr) == FALSE) { install.packages("dplyr") }
   if( require(e1071) == FALSE) { install.packages("e1071") }
   if( require(kknn) == FALSE) { install.packages("klaR")}
   if( require(RWeka) == FALSE) { install.packages("RWeka") }
@@ -15,7 +16,7 @@ loadPackages3 <- function() {
 }
 while(ready == FALSE) { ready <- loadPackages3() }
 
-set.seed(7131)
+set.seed(1911)
 
 ##############################################################################################
 #                                   IMDB DATA SET
@@ -25,14 +26,14 @@ set.seed(7131)
 movieData <- readRDS("clean10Kdataset.rds")
 
 # clean up the movie data set
-# description, rating, imdbVotes, seriesID, season, type, awards, imdbRating, Poster, episode, imdbID, Metascore, response, and year
+# description, rating, imdbVotes, seriesID, season, type, awards, imdbRating, Poster, episode, imdbID, Metascore, response, language, and year
 # were removed from table for analysis because they did not provide information helpful to classification
 
 # check variables
 names(movieData)
 
 # remove unneeded variables
-movieData <- movieData[,c(3,4,5,10,11,13,17,18,19,23)]
+movieData <- movieData[,-c(1,2,7,8,9,10,13,15,16,17,18,21,22,24)]
 
 # confirm variable removal
 names(movieData)
@@ -46,21 +47,102 @@ names(movieData)
 #country is going to be cut down to 2 items per list
 movieData$Country <- lapply(movieData$Country,"[",1:2)
 
-# Language is going to be cut down to 2 items as well
-movieData$Language <- lapply(movieData$Language,"[",1:2)
-
 # Cut genre down to 3 items
 movieData$Genre <- lapply(movieData$Genre,"[",1:2)
 
-# Cleans writer variables
+# Cleans writer entries
 movieData$Writer <- lapply(movieData$Writer, function(x) {
   gsub( " *\\(.*?\\) *", "", x)
   })
 
+tgemp <- movieData
+
+# Reordering first and last name and removing exraneous separators
+# First step is to remove single quote and double quotes
+# yes, soempeople's name may have a single quote in it however numbers are so small
+# it wont affect the data
+
+###################################### fix producer ######################################
+
+# single quote removal
+movieData$Producer <- lapply(movieData$Producer, function(x){
+  gsub("\'", "", x)#
+})
+
+# double quote removal
+movieData$Producer <- lapply(movieData$Producer, function(x){
+  gsub("\"", "", x)#
+})
+
+# remove brackets
+movieData$Producer <- lapply(movieData$Producer, function(x){
+  gsub("\\[", "", x)#
+})
+
+movieData$Producer <- lapply(movieData$Producer, function(x){
+  gsub("\\]", "", x)#
+})
+
+movieData$Producer <- lapply(movieData$Producer, function(x){
+strsplit(x,",")
+})
+
+firstName <- lapply(movieData$Producer, function(x){
+ x[[1]][2]
+})
+
+lastName <- lapply(movieData$Producer, function(x){
+  x[[1]][1]
+})
+
+movieData$Producer <- paste(firstName, lastName)
+
+########################## end fixing of producer ########################
+
+###################################### fix cinematographer ######################################
+
+# single quote removal
+movieData$Cinematographer <- lapply(movieData$Cinematographer, function(x){
+  gsub("\'", "", x)#
+})
+
+# double quote removal
+movieData$Cinematographer <- lapply(movieData$Cinematographer, function(x){
+  gsub("\"", "", x)#
+})
+
+# remove brackets
+movieData$Cinematographer <- lapply(movieData$Cinematographer, function(x){
+  gsub("\\[", "", x)#
+})
+
+movieData$Cinematographer <- lapply(movieData$Cinematographer, function(x){
+  gsub("\\]", "", x)#
+})
+
+movieData$Cinematographer <- lapply(movieData$Cinematographer, function(x){
+  strsplit(x,",")
+})
+
+firstName <- lapply(movieData$Cinematographer, function(x){
+  x[[1]][2]
+})
+
+lastName <- lapply(movieData$Cinematographer, function(x){
+  x[[1]][1]
+})
+
+movieData$Cinematographer <- paste(firstName, lastName)
+
+########################## end fixing of Cinematographer ########################
+
 # Create unique rows for each genre
 movieData <- unnest(movieData,Genre)
+movieData <- unnest(movieData, Writer)
+movieData <- unnest(movieData, Actors)
+movieData <- unnest(movieData, Country)
 
-# Drop rows with NA genre
+# Drop rows with NA genre because we can't classify these
 movieData <- movieData[!(is.na(as.factor(movieData$Genre))),]
 movieData <- movieData[!movieData$Genre == "N/A",]
 movieData$Genre <- as.factor(movieData$Genre)
@@ -74,47 +156,45 @@ test <- movieData[-part,]
 saveRDS(training,file="training.rds")
 saveRDS(test,file="test.rds")
 
-############################ TO DO'S ##################################
-#once testData is successfully created, need to go in and change -6 to appropriate value to create test data 
-#that does not contain attribute genre to replace in the predict methods below where you see testDataMovie[,1:4]
+### TEST AND TRAINING SETS ARE A GO
 
-movieDataWOutGenre <- movieData[,-6]
-movieDataWOutGenre$Writer <- noParentheses
+# For future use, make new data table without the genre label in it
+movieDataWOutGenre <- test[,-11]
 
 
 #RIPPER CLASSIFIER
-ripperModelMovie <- JRip(Species~., data = trainingDataMovie)
-ripperPredictionsMovie <- predict(ripperModelMovie, testDataMovie[,1:4])
+ripperModelMovie <- JRip(Genre~., data = training)
+ripperPredictionsMovie <- predict(ripperModelMovie, movieDataWOutGenre)
 # summarize results
-ripCMMovie <- confusionMatrix(ripperPredictionsMovie, testDataMovie$Genre)
+ripCMMovie <- confusionMatrix(ripperPredictionsMovie, test$Genre)
 
 
 #C4.5 CLASSIFICATION
-c45ModelMovie <- J48(Genre~., data = trainingDataMovie)
-c45ModelPredictionsMovie <- predict(c45ModelMovie, testDataMovie[,1:4])
-c45CMMovie <- confusionMatrix(c45ModelPredictionsMovie, testDataMovie$Genre)
+c45ModelMovie <- J48(Genre~., data = training)
+c45ModelPredictionsMovie <- predict(c45ModelMovie, movieDataWOutGenre)
+c45CMMovie <- confusionMatrix(c45ModelPredictionsMovie, test$Genre)
 
 
 #OBLIQUE CLASSIFICATION 
-obliqueModelMovie <- oblique.tree(formula = Genre~., data = trainingDataMovie, oblique.splits = "only")
-obliqueModelPredictionsMovie <- predict(obliqueModelMovie, testDataMovie)
-obCMMovie <- confusionMatrix(colnames(obliqueModelPredictionsMovie)[max.col(obliqueModelPredictionsMovie)], testDataMovie$Genre)
+obliqueModelMovie <- oblique.tree(formula = Genre~., data = training, oblique.splits = "only")
+obliqueModelPredictionsMovie <- predict(obliqueModelMovie, test)
+obCMMovie <- confusionMatrix(colnames(obliqueModelPredictionsMovie)[max.col(obliqueModelPredictionsMovie)], test$Genre)
 
 
 #NAIVE BAYES CLASSIFIER
 # train a naive bayes model
-naiveBayesModel <- NaiveBayes(Genre~., data=trainingDataMovie)
+naiveBayesModel <- NaiveBayes(Genre~., data=training)
 # make predictions
 #look at this
-predictions <- predict(naiveBayesModel, testDataMovie[,1:4])
+predictions <- predict(naiveBayesModel, movieDataWOutGenre)
 # summarize results
-nbCMMovie <- confusionMatrix(predictions$class, testDataMovie$Genre)
+nbCMMovie <- confusionMatrix(predictions$class, test$Genre)
 
 
 #KNN CLASSIFIER
-kkModel <- kknn(Genre~., test = testDataMovie, train = trainingDataMovie, distance = 1, kernel = "triangular")
-knnPredictions <- predict(kkModel, testDataMovie[,1:4])
-knnCMMovie <- confusionMatrix(knnPredictions, testDataMovie$Genre)
+kkModel <- kknn(Genre~., test = test, train = training, distance = 1, kernel = "triangular")
+knnPredictions <- predict(kkModel, movieDataWOutGenre)
+knnCMMovie <- confusionMatrix(knnPredictions, test$Genre)
 
 
 
