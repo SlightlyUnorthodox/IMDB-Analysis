@@ -26,14 +26,14 @@ set.seed(1911)
 movieData <- readRDS("clean10Kdataset.rds")
 
 # clean up the movie data set
-# description, rating, imdbVotes, seriesID, season, type, awards, imdbRating, Poster, episode, imdbID, Metascore, response, language, and year
+# description, rating, imdbVotes, seriesID, season, type, awards, imdbRating, Poster, episode, released, imdbID, Metascore, response, language, and year
 # were removed from table for analysis because they did not provide information helpful to classification
 
 # check variables
 names(movieData)
 
 # remove unneeded variables
-movieData <- movieData[,-c(1,2,7,8,9,10,13,15,16,17,18,21,22,24)]
+movieData <- movieData[,-c(1,2,6,7,8, 9, 11, 12, 14, 15, 16, 17, 20, 21, 23, 30 ,31)]
 
 # confirm variable removal
 names(movieData)
@@ -41,13 +41,12 @@ names(movieData)
 # now are datasets contain only the important variables pertinent to classification
 # episodes taken about because all values are N/A for this dataset
 
-#maybe need to use lapply we'll see
-#Retail_data[] <- lapply(Retail_data, factor)
+#country is going to be cut down to 1 country
+movieData$Country <- lapply(movieData$Country,"[",1)
 
-#country is going to be cut down to 2 items per list
-movieData$Country <- lapply(movieData$Country,"[",1:2)
+#movieData$Language <- lapply(movieData$Language,"[",1)
 
-# Cut genre down to 3 items
+# Cut genre down to 2 items
 movieData$Genre <- lapply(movieData$Genre,"[",1:2)
 
 # Cleans writer entries
@@ -139,13 +138,33 @@ movieData$Cinematographer <- paste(firstName, lastName)
 # Create unique rows for each genre
 movieData <- unnest(movieData,Genre)
 movieData <- unnest(movieData, Writer)
-movieData <- unnest(movieData, Actors)
+#movieData <- unnest(movieData, Actors)
 movieData <- unnest(movieData, Country)
+#movieData <- unnest(movieData, Language)
 
 # Drop rows with NA genre because we can't classify these
 movieData <- movieData[!(is.na(as.factor(movieData$Genre))),]
 movieData <- movieData[!movieData$Genre == "N/A",]
 movieData$Genre <- as.factor(movieData$Genre)
+
+# Cast as factor
+movieData$Rated <- as.factor(movieData$Rated)
+movieData$Title <- as.factor(movieData$Title)
+movieData$Director <- as.factor(movieData$Director)
+movieData$Actor1 <- as.factor(movieData$Actor1)
+movieData$Actor2 <- as.factor(movieData$Actor2)
+movieData$Actor3 <- as.factor(movieData$Actor3)
+movieData$Actor4 <- as.factor(movieData$Actor4)
+movieData$Producer <- as.factor(movieData$Producer)
+movieData$Cinematographer <- as.factor(movieData$Cinematographer)
+movieData$Writer <- as.factor(movieData$Writer)
+movieData$Country <- as.factor(movieData$Country)
+#movieData$Language <- as.factor(movieData$Language)
+
+
+#insert pruning methods here
+#movieData <- movieData[movieData$Language == 'English',]
+#movieData <- movieData[movieData$Country == 'USA',]
 
 # Create test and training sets
 part <- createDataPartition(movieData$Genre,p=0.8,list=FALSE)
@@ -159,8 +178,12 @@ saveRDS(test,file="test.rds")
 ### TEST AND TRAINING SETS ARE A GO
 
 # For future use, make new data table without the genre label in it
-movieDataWOutGenre <- test[,-11]
+movieDataWOutGenre <- test[,-12]
 
+##################### TO DO
+# try making them factors
+#figure out if unnest is best way to go
+#try differnet attribute comobinations to seewhats best
 
 #RIPPER CLASSIFIER
 ripperModelMovie <- JRip(Genre~., data = training)
@@ -168,6 +191,7 @@ ripperPredictionsMovie <- predict(ripperModelMovie, movieDataWOutGenre)
 # summarize results
 ripCMMovie <- confusionMatrix(ripperPredictionsMovie, test$Genre)
 
+names(movieData)
 
 #C4.5 CLASSIFICATION
 c45ModelMovie <- J48(Genre~., data = training)
@@ -176,19 +200,18 @@ c45CMMovie <- confusionMatrix(c45ModelPredictionsMovie, test$Genre)
 
 
 #OBLIQUE CLASSIFICATION 
-obliqueModelMovie <- oblique.tree(formula = Genre~., data = training, oblique.splits = "only")
-obliqueModelPredictionsMovie <- predict(obliqueModelMovie, test)
-obCMMovie <- confusionMatrix(colnames(obliqueModelPredictionsMovie)[max.col(obliqueModelPredictionsMovie)], test$Genre)
+#obliqueModelMovie <- oblique.tree(formula = Genre~., data = training, oblique.splits = "only")
+#obliqueModelPredictionsMovie <- predict(obliqueModelMovie, test)
+#obCMMovie <- confusionMatrix(colnames(obliqueModelPredictionsMovie)[max.col(obliqueModelPredictionsMovie)], test$Genre)
 
 
 #NAIVE BAYES CLASSIFIER
 # train a naive bayes model
-naiveBayesModel <- NaiveBayes(Genre~., data=training)
+naiveBayesModel <- naiveBayes(Genre~., data=training)
 # make predictions
-#look at this
-predictions <- predict(naiveBayesModel, movieDataWOutGenre)
+predictions <- predict(naiveBayesModel, movieDataWOutGenre) 
 # summarize results
-nbCMMovie <- confusionMatrix(predictions$class, test$Genre)
+nbCMMovie <- confusionMatrix(predictions, test$Genre)
 
 
 #KNN CLASSIFIER
@@ -197,59 +220,38 @@ knnPredictions <- predict(kkModel, movieDataWOutGenre)
 knnCMMovie <- confusionMatrix(knnPredictions, test$Genre)
 
 
-
 ##############################################################################################
 #                             FINAL DISPLAYED RESULTS
 ##############################################################################################
 #...............................CONFUSION MATRICES FOR IRIS...................................
 # RIPPER
-print(ripCMIris)
+print(ripCMMovie)
 
 #C4.5
-print(c45CMIris)
+print(c45CMMovie)
 
 #OBLIQUE
-print(obCMIris)
+#print(obCMMovie)
 
 #NAIVE BAYES
-print(nbCMIris)
+print(nbCMMovie)
 
 #KNN
-print(knnCMIris)
+print(knnCMMovie)
 
-#.....................CONFUSION MATRICES FOR LIFE EXPECTANCY...................................
-#RIPPER
-print(ripCMLExpect)
 
-#C4.5
-print(c45CMLExpect)
-
-#OBLIQUE 
-print(obCMLExpect)
-
-#NAIVE BAYES
-print(nbCMLExpect)
-
-#KNN
-print(knnCM)
-
+################## IGNORE BELOW FOR NOW
 
 #get iris accuracies
-accRipIris <- ripCMIris$overall[1]
-accC45Iris <- c45CMIris$overall[1]
-accOBIris <- obCMIris$overall[1]
-accNBIris <- nbCMIris$overall[1]
-accKNNIris <- knnCMIris$overall[1]
+accRipMovie <- ripCMMovie$overall[1]
+accC45Movie <- c45CMMovie$overall[1]
+accOBMovie <- obCMMovie$overall[1]
+accNBMovie <- nbCMMovie$overall[1]
+accKNNMovie <- knnCMMovie$overall[1]
 
-#get life expectancy accuracies
-accRipLE <- ripCMLExpect$overall[1]
-accC45LE <- c45CMLExpect$overall[1]
-accOBLE <- obCMLExpect$overall[1]
-accNBLE <- nbCMLExpect$overall[1]
-accKNNLE <- knnCM$overall[1]
 
-accuracyMatrix <- matrix(c(accRipIris, accRipLE, accC45Iris, accC45LE, accOBIris, accOBLE, accNBIris, accNBLE, accKNNIris, accKNNLE), ncol = 2, byrow = TRUE)
-colnames(accuracyMatrix) <- c("Iris Data Accuracies", "Life Expectancy Data Accuracies")
+accuracyMatrix <- matrix(c(accRipMovie, accC45Movie, accOBMovie, accNBMovie, accKNNMovie), ncol = 2, byrow = TRUE)
+colnames(accuracyMatrix) <- c("Movie Data Accuracies", "Life Expectancy Data Accuracies")
 rownames(accuracyMatrix) <- c("Ripper", "C4.5", "Oblique Tree", "Naive Bayes", "KNN")
 accuracyMatrix <- as.table(accuracyMatrix)
 print(accuracyMatrix)
