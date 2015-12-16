@@ -26,14 +26,14 @@ set.seed(1911)
 movieData <- readRDS("clean10Kdataset.rds")
 
 # clean up the movie data set
-# description, rating, imdbVotes, seriesID, season, type, awards, imdbRating, Poster, episode, imdbID, Metascore, response, language, and year
+# description, rating, imdbVotes, seriesID, season, type, awards, imdbRating, Poster, episode, released, imdbID, Metascore, response, language, and year
 # were removed from table for analysis because they did not provide information helpful to classification
 
 # check variables
 names(movieData)
 
 # remove unneeded variables
-movieData <- movieData[,-c(1,2,6,7,8, 9, 12, 14, 15, 16, 17, 20, 21, 23, 30 ,31)]
+movieData <- movieData[,-c(1,2,6,7,8, 9, 11, 12, 14, 15, 16, 17, 20, 21, 23, 30 ,31)]
 
 # confirm variable removal
 names(movieData)
@@ -172,7 +172,7 @@ saveRDS(test,file="test.rds")
 ### TEST AND TRAINING SETS ARE A GO
 
 # For future use, make new data table without the genre label in it
-movieDataWOutGenre <- test[,-13]
+movieDataWOutGenre <- test[,-12]
 
 ##################### TO DO
 # try making them factors
@@ -201,12 +201,12 @@ obCMMovie <- confusionMatrix(colnames(obliqueModelPredictionsMovie)[max.col(obli
 
 #NAIVE BAYES CLASSIFIER
 # train a naive bayes model
-naiveBayesModel <- NaiveBayes(Genre~., data=training)
+naiveBayesModel <- naiveBayes(Genre~., data=training)
 # make predictions
 #look at this
-predictions <- predict(naiveBayesModel, movieDataWOutGenre)
+predictions <- predict(naiveBayesModel, movieDataWOutGenre) 
 # summarize results
-nbCMMovie <- confusionMatrix(predictions$class, test$Genre)
+nbCMMovie <- confusionMatrix(predictions, test$Genre)
 
 
 #KNN CLASSIFIER
