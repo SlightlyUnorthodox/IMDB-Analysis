@@ -456,7 +456,6 @@ The following are some of the observations made in determining statistical valid
 
 An initial query was made to examine how many of the original 30K elements were valid movies as well as how many showed up as null values.
 
-
 ```{r eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
 # Prepare example set
 stats <- jsonToCsv()
@@ -615,15 +614,23 @@ kMeans performed very quickly with respect to the dataset size.
 
 # Conclusion
 
-Future endeavors, build larger dataset, allow for k-folds sampling and cross-validation
+Regardless of the results, after the work done to tackle these data mining problems there are several clear avenues of approach for future endeavors. Ideally, a bigger dataset would be built, allowing for a greater variety of sampling methods to be applied, namely k-folds and stratified sampling. It seems apparent that the results for each task could have been improved by taking a stratified sample by movie years or even genres (for developing *usual casts*). Building a larger dataset could be done rather easily, it's primarily a question of time and resources. In the process of building the small "10K" dataset used here, the limiting factor was internet speed and availability, the risk of having a connection drop out mid web-sraping process prevented trying to run longer/larger python API-calls.
 
 # References & Resources
 
-The Internet Movie Database
+* The Internet Movie Database
 [http://www.imdb.com](IMDb)
 
-IMDbPY - Python API and Materials for IMDB searches
+* IMDbPY - Python API and Materials for IMDB searches
 [http://www.imdbpy.sourceforge.net](IMDbPY & imdbpy2sql.py)
 
-The Open Movie Database
+* The Open Movie Database
 [http://www.omdbapi.com/](OMDb API)
+
+# Readings
+
+* 'Automatic Video Classification: A Survey of the Literature' by Darin Brezeale and Diane J. Cook, Senior Member, IEEE
+IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS, VOL. UNKNOWN, NO. UNKNOWN, UNKNOWN 2007
+
+* 'Predicting Movie Success Based on IMDB Data' by Nithin VR, Pranav M, Sarath Babu PB, and Lijiya A
+International Journal of Data Mining Techniques and Applications Volume: 03, June 2014, Pages: 365-368 
