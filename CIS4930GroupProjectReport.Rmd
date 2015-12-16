@@ -497,11 +497,14 @@ One last visualization provides the distribution of movie runtimes over the year
 qplot(Year,Runtime,data=stats)
 ```
 
-## Quantitative Analysis
+# Method and Materials
+
+## Genre Classification
 
 ### Unique Genres
 The unique genre classes were found by performing a pruning of the initial genre data.
-```{r, eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+
+```{r, eval=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
 #Prune the data to remove excess collection space
 dataPruned <- lapply(dataGenre, function(x) {
   # Make the collection 'unique', removing all the blank collection spots
@@ -511,23 +514,176 @@ dataPruned <- lapply(dataGenre, function(x) {
   x <- x[-length(x)]
  
 })
-```
-
-Then listing the results.
-
-```{r, eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
 #list unique genre entries
 unique(unlist(dataPruned))
 ```
-
 This resulted in 29 unique genre classes and therefore 29 clusters to use in cluster analysis.
 
+The task of genre prediction reflected the efforts made in Individual Project I. Using classification methods RIPPER, C4.5, oblique trees, naive bayes, and the knn classifier, we hoped effectively predict the genre of a film based off its other
+characteristics. 
 
-# Method and Materials
+One of the first steps in achieving this goal was first formatting the data in a way that was helpful and relevant to the task at hand. 
+For example, the imdbID attribute was removed from the dataset when creating the training and test sets since it was independent of
+predicting the genre of the film. 
+
+One type of preprocessing that we addressed was for the Producer and Cinematographer columns the data was formatted as such
+['LastName, FirstName']. In order to use this data in a format that could be used by the classification methods we performed the following operations. Note: Same process was run for Cinematographer
+
+```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+###################################### fix producer ######################################
+
+# single quote removal
+movieData$Producer <- lapply(movieData$Producer, function(x){
+  gsub("\'", "", x)#
+})
+
+# double quote removal
+movieData$Producer <- lapply(movieData$Producer, function(x){
+  gsub("\"", "", x)#
+})
+
+# remove brackets
+movieData$Producer <- lapply(movieData$Producer, function(x){
+  gsub("\\[", "", x)#
+})
+
+movieData$Producer <- lapply(movieData$Producer, function(x){
+  gsub("\\]", "", x)#
+})
+
+movieData$Producer <- lapply(movieData$Producer, function(x){
+strsplit(x,",")
+})
+
+firstName <- lapply(movieData$Producer, function(x){
+ x[[1]][2]
+})
+
+lastName <- lapply(movieData$Producer, function(x){
+  x[[1]][1]
+})
+
+movieData$Producer <- paste(firstName, lastName)
+```
+
+One other type of processing we had to address was for the column 'Writer' because it read in with parenthetical notes that affected how the classification algorithms performed. The processing is shown below:
+
+```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+# Cleans writer entries
+movieData$Writer <- lapply(movieData$Writer, function(x) {
+  gsub( " *\\(.*?\\) *", "", x)
+  })
+```
+
+The following code below are snippets of the key functions of the GenreClassification.R script:
+
+Here we remove the columns that don't aid classification:
+```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+
+# remove unneeded variables
+movieData <- movieData[,-c(1,2,6,7,8, 9, 11, 12, 14, 15, 16, 17, 20, 21, 23, 30 ,31)]
+```
+
+Here we use unnest because some of our attributes are stored as lists and for processing purposes they needed to be their own rows.
+```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+# Create unique rows for each genre
+movieData <- unnest(movieData,Genre)
+movieData <- unnest(movieData, Writer)
+#movieData <- unnest(movieData, Actors)
+movieData <- unnest(movieData, Country)
+```
+
+Here we remove the rows with the NA genre because these cannot be classified:
+```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+movieData <- movieData[!(is.na(as.factor(movieData$Genre))),]
+movieData <- movieData[!movieData$Genre == "N/A",]
+movieData$Genre <- as.factor(movieData$Genre)
+```
+
+Here we cast the string as factors so that the classification algorithms have the correct parameters:
+```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+# Cast as factor
+movieData$Rated <- as.factor(movieData$Rated)
+movieData$Title <- as.factor(movieData$Title)
+movieData$Director <- as.factor(movieData$Director)
+movieData$Actor1 <- as.factor(movieData$Actor1)
+movieData$Actor2 <- as.factor(movieData$Actor2)
+movieData$Actor3 <- as.factor(movieData$Actor3)
+movieData$Actor4 <- as.factor(movieData$Actor4)
+movieData$Producer <- as.factor(movieData$Producer)
+movieData$Cinematographer <- as.factor(movieData$Cinematographer)
+movieData$Writer <- as.factor(movieData$Writer)
+movieData$Country <- as.factor(movieData$Country)
+```
+
+Like in project I we assign training and test sets:
+```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+# Create test and training sets
+part <- createDataPartition(movieData$Genre,p=0.8,list=FALSE)
+training <- movieData[part,]
+test <- movieData[-part,]
+```
+
+Here are the classification algorithms we utilized, note we don't run the oblique method because it fails due to memory allocation:
+```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
+#RIPPER CLASSIFIER
+ripperModelMovie <- JRip(Genre~., data = training)
+ripperPredictionsMovie <- predict(ripperModelMovie, movieDataWOutGenre)
+# summarize results
+ripCMMovie <- confusionMatrix(ripperPredictionsMovie, test$Genre)
+
+
+#C4.5 CLASSIFICATION
+c45ModelMovie <- J48(Genre~., data = training)
+c45ModelPredictionsMovie <- predict(c45ModelMovie, test[,-12])
+c45CMMovie <- confusionMatrix(c45ModelPredictionsMovie, test$Genre)
+
+
+#OBLIQUE CLASSIFICATION 
+obliqueModelMovie <- oblique.tree(formula = Genre~., data = training, oblique.splits = "only")
+obliqueModelPredictionsMovie <- predict(obliqueModelMovie, test)
+obCMMovie <- confusionMatrix(colnames(obliqueModelPredictionsMovie)[max.col(obliqueModelPredictionsMovie)], test$Genre)
+
+
+#NAIVE BAYES CLASSIFIER
+# train a naive bayes model
+naiveBayesModel <- naiveBayes(Genre~., data=training)
+# make predictions
+#look at this
+predictions <- predict(naiveBayesModel, movieDataWOutGenre) 
+# summarize results
+nbCMMovie <- confusionMatrix(predictions, test$Genre)
+
+
+#KNN CLASSIFIER
+#lets try getting rid of NA values
+subset <- test$Genre[1:245]
+kkModel <- kknn(Genre~., test = test, train = training, distance = 1, kernel = "triangular")
+p <- predict(kkModel, movieDataWOutGenre)
+knnCMMovie <- confusionMatrix(p, subset)
+```
+
+Below prints the accuracies for each method used above in a table:
+```{r eval=TRUE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE}
+accRipMovie <- ripCMMovie$overall[1]
+accC45Movie <- c45CMMovie$overall[1]
+accNBMovie <- nbCMMovie$overall[1]
+accKNNMovie <- knnCMMovie$overall[1]
+
+accuracyMatrix <- matrix(c(accRipMovie, accC45Movie, accNBMovie, accKNNMovie), ncol = 1, byrow = TRUE)
+colnames(accuracyMatrix) <- c("Movie Data Accuracies")
+rownames(accuracyMatrix) <- c("Ripper", "C4.5", "Naive Bayes", "KNN")
+accuracyMatrix <- as.table(accuracyMatrix)
+print(accuracyMatrix)
+```
+
+
+```
+
 ## Clustering
 For cluster analysis, the dataset was reduced to included just the 'Genre' attribute. This was chosen because we believed it had the strongest correlation to grouping similar movies, as well as convenience to match the number of clusters (instructed to be equal to the number of genres). 
 
-```{r, eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+```{r, eval=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
 # Load dataset
 data <- readRDS("clean10Kdataset.rds")
 
@@ -542,7 +698,7 @@ We then created a matrix which mapped out the individual existence of the genre 
 
 Using kMeans, we performed a distance based cluster analysis and appended its results to the matrix.
 
-```{r, eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+```{r, eval=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
 # kmean cluster with k = 29 clusters (genres)
 kmeanCluster <- kmeans(distanceMatrix, 29)
 
@@ -589,6 +745,11 @@ sortedUniqueMovieRules <- sort(uniqueMovieRules, by = "lift")
 For the Genre/Cast portion of the Association Rules, I attempted to bring in the Genre as a factor of 29 attributes and tried to merge it back into the main subset. This did not proved useful when trying run apriori as it gave errors of it not being in logical or factor format.  
 
 # Results
+## Genre Classification
+The results of the classifications are shown below.
+
+
+
 
 ## Clustering
 The result of the cluster assignments are shown below.
@@ -633,6 +794,52 @@ There are no results when attempting to rectify the "lhs" portion of the the apr
 There are no results when attempting to rectify the "Genre/Cast" portion of the apriori. I attempted to fracture "Genre" into their respective genre types and run the apriori on that. There were many errors that led up to this that eventually led to this portion of the analysis to not work entirely. My attempts at the "Genre/Cast" are in the assocRules.r file but commented out to make the general apriori function runnable. 
 
 # Discussion
+
+## Genre Classification
+
+**_What were our options for classification?_**
+
+Our options for classification included:
+1. imdbID             8. imdbVotes            15. imdbRating          22. Response
+2. Plot               9. seriesID             16. Poster              23. Year
+3. Rated              10. Season              17. Episode             24. Error
+4. Title              11. Director            18. Language            25. Producer
+5. Writer             12. Released            19. Country             26. Cinematographer
+6. Actors             13. Awards              20. Metascore           27. Composer
+7. Type               14. Genre               21. Runtime             28. CostumeDesigner
+
+Of the 28 options listed, at the end of the day only 12 attributes ended up being used for genre classification.
+These attributes are:
+
+1. Rated                  7. Cinematographer
+2. Title                  8. Genre
+3. Director               9. Writer
+4. Released               10. Actors
+5. Runtime                11. Country/Language
+6. Year                   12. Producer 
+ 
+The attributes that were removed were chosen because they were deemed irrelevant to determining the genre of a movie. Some of the attributes were subbed back into the overall data table to check and see if they affected the overall accuracy.
+
+'Language' and 'Country' specifically were an interesting pair of attributes because they relayed very similar information so 
+either or were chosen to be used during classification.
+'Released' relayed almost identical information as the attribute 'Year' but was formatted as a date which threw off some of the classification algorithms, so it was removed as a result.                             
+
+**_How did you evaluate different classification techniques?_**
+
+When it came to evaluating each of our classification techniques, we computed confusion matrices that provided useful
+metrics related to the success of our classifiers. Through the confusion matrices we were able to see metrics like accuracy and
+confidence intervals. 
+
+Through comparing their accuracies we were able to see which classification techniques worked "better" than others where better is defined as higher percentage of accuracy. 
+
+We were unable to evaluate the oblique tree classification technique becuase the size of the vector created in the oblique tree algorithm exceed 1.5 gigabytes and R Studio would not store that large of a variable. So that classification method is commented out in the code as shown in the displayed script.
+
+
+**_What measures have you taken to improve the results?_**
+
+The measures we took to imporve the results as much as possible include trial and errror of which attribtues from the database
+yielded the greatest accuracy. Extreme care was also put into formatting and preprocessing the data so that the classification methods would correctly run.  
+
 
 ## Clustering
 **_Would clustering the movies into k' clusters where k' > k help in better categorization? And how._**
@@ -680,3 +887,13 @@ IMDbPY - Python API and Materials for IMDB searches
 
 The Open Movie Database
 [http://www.omdbapi.com/](OMDb API)
+
+
+# Readings
+
+* 'Automatic Video Classification: A Survey of the Literature' by Darin Brezeale and Diane J. Cook, Senior Member, IEEE
+IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS, VOL. UNKNOWN, NO. UNKNOWN, UNKNOWN 2007
+
+* 'Predicting Movie Success Based on IMDB Data' by Nithin VR, Pranav M, Sarath Babu PB, and Lijiya A
+International Journal of Data Mining Techniques and Applications Volume: 03, June 2014, Pages: 365-368 
+
