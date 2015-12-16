@@ -36,8 +36,12 @@ assocDataSubset <- assocData[,c("Director","Writer","Actor1","Actor2","Actor3","
 #assocDataSubset <- assocData[,c("Director","Writer","Actors","Producer","Cinematographer","Composer","CostumerDesigners","Genre")]
 
 #Build ruleset
-movieRules <- apriori(assocDataSubset,parameter = list(support = 0.0001,confidence = 0.9))
+movieRules <- apriori(assocDataSubset,parameter = list(support = 0.0001,confidence = 0.9),
+                      appearance = list(lhs=c("Director","Writer")));
 inspect(head(movieRules))
+
+
+
 
 #Removes redundant rules
 uniqueMovieRules <- redundantRules(movieRules)

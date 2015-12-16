@@ -7,7 +7,7 @@ output: pdf_document
 
 # Introduction
 
-The following report details the research and procedures done to carry out data mining tasks on a reasonable sample of the Internet Movie Database (IMDb) and its collection of movies. These procedures were broken into the following major categories:
+The following report details the research and procedures designed to carry out data mining tasks on a reasonable sample of the Internet Movie Database (IMDb) and its collection of movies. These procedures were broken up into the following major categories:
 
 * Dataset Creation
 * Genre prediction (classification) 
@@ -26,7 +26,7 @@ The data overview is divided into the following steps, as significant decisions 
 * Preprocessing
 * Datset Statistics
 
-The packages and required workspace prepartion steps are listed below for reproducibility purposes.
+The packages and required workspace prepartion steps are shown below for reproducibility purposes.
 
 ```{r eval=TRUE,warning=FALSE,message=FALSE}
 #Dynamically load/install required packages
@@ -48,7 +48,7 @@ set.seed(7131)
 
 ## Building the Dataset
 
-Numerous efforts were carried out to build a work sample set for this project, and while an exhaustive amount of detail could be provided for each attempted method, only a brief overview of each attempt will be given before providing a more lengthy explanation of the methods that were finally chosen.
+Numerous efforts were carried out to build a work sample set for this project, and while an exhaustive amount of detail could be written for each attempted method, only a brief overview of each attempt will be given before providing a more lengthy explanation of the methods that were finally chosen.
 
 **Round One**: Load flat files from FTP server directly into R
   
@@ -75,8 +75,8 @@ Note that although the dataset is created from OMBb's 3rd-party API, each reques
 
 ```{r eval=FALSE}
 ## Title: IMDB sample database creator
+## Filename: imdbscraper.py
 ## Author: Dax Gerts
-## Description: use OMDb API to rapidly build a clean JSON IMDb data sample
 
 import requests
 import numpy as np 
@@ -110,6 +110,7 @@ It was discovered further on in the process on building the sample set that the 
 
 ```{r eval=FALSE}
 ## Title: IMDB sample database creator
+## Filename: castscrape.py
 ## Author: Dax Gerts
 
 import imdb
@@ -191,15 +192,14 @@ with open('imdb_10K_cast_plus.csv','wb') as csvfile:
 
 ## Preprocessing
 
-Each variable was examined to make sure that it had a 
-
 ### Load Dataset Into R
 
 Having created a working dataset, the following function, *jsonToCsv*, was written to speed up the process of formatting the data for use in R. *jsonToCsv* first reads the json object from the given file (defaulting to *imdb_30K_sample.json*) using the R package *jsonlite*. While the function returns a data frame, it also  backs up the data to a local csv file.
 
 ```{r eval=TRUE}
 # Reformat OMDB JSON queries as csv
-jsonToCsv <- function(filename = "imdb_30K_sample.json",write=TRUE,csvfile = "imdb_30K_sample.csv") {
+jsonToCsv <- function(filename = "imdb_30K_sample.json",write=TRUE,
+                      csvfile = "imdb_30K_sample.csv") {
   data <- fromJSON(txt=as.character(filename))
   if(write==TRUE) {
     write.csv(data,file=csvfile,row.names = FALSE)
@@ -262,18 +262,21 @@ preprocessing <- function(data) {
     
   # 1.5 Actors - list ==> factors
   data$Actors <- strsplit(data$Actors,", ")
-  data$Actors <- sapply(data$Actors,'[',seq(max(sapply(data$Actors,length))),simplify=FALSE)
+  data$Actors <- sapply(data$Actors,'[',seq(max(sapply(data$Actors,length))),
+                        simplify=FALSE)
   data$Actors[1:5]
 
   ### BEGIN ACTORS FIX
   
-  # Description: Actors was broken into 4 columns (setting max number) and re-parsed as factors
+  # Description: Actors was broken into 4 columns (setting max number)
+  # and re-parsed as factors
   
   #Split actors to temp unique columns
   temp<- ldply(data$Actors)
   colnames(temp) <- c('Actor1','Actor2','Actor3','Actor4')
   
-  #Reassign actors to working data frame under new names ("Actor1","Actor2","Actor3","Actor4")
+  #Reassign actors to working data frame under new names
+  # ("Actor1","Actor2","Actor3","Actor4")
   data$Actor1 <- temp[1]
   data$Actor2 <- temp[2]
   data$Actor3 <- temp[3]
@@ -322,7 +325,7 @@ preprocessing <- function(data) {
   # 1.11 Released - date 
   data$Released <- as.Date(data$Released,"%d %b %Y")
   
-  # 1.12 Awards - to finicky to do anything with now (parse for numeric values later, maybe)
+  # 1.12 Awards - fine as is
   
   # 1.13 Genre - fact list
   data$Genre <- strsplit(data$Genre,", ")
@@ -339,12 +342,14 @@ preprocessing <- function(data) {
   
   # 1.17 Language - factor list
   data$Language <- strsplit(data$Language,", ")
-  data$Language <- sapply(data$Language,'[',seq(max(sapply(data$Language,length))),simplify=FALSE)
+  data$Language <- sapply(data$Language,'[',seq(max(sapply(data$Language,length))),
+                          simplify=FALSE)
   data$Language[1:5]
   
   # 1.18 Country
   data$Country <- strsplit(data$Country,", ")
-  data$Country <- sapply(data$Country,'[',seq(max(sapply(data$Country,length))),simplify=FALSE)
+  data$Country <- sapply(data$Country,'[',seq(max(sapply(data$Country,length))),
+                         simplify=FALSE)
   data$Country[1:5]
   
   # 1.19 Runtime - numeric (calls setTime function to convert values)
@@ -421,6 +426,9 @@ The following are some of the observations made in determining statistical valid
 
 ### Before Preprocessing
 
+An initial query was made to examine how many of the original 30K elements were valid movies as well as how many showed up as null values.
+
+
 ```{r eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
 # Prepare example set
 stats <- jsonToCsv()
@@ -432,7 +440,11 @@ sum(is.na(as.factor(stats$Type)))
 ggplot(stats, aes(x = factor(Type))) + geom_bar(stat = "bin")
 ```
 
+As shown here, a significant majority of the tuples were actually episodes, which made sense in the context of there being many episodes per TV show, each with there own entry. Although outside the scope of the problems tackled here, there was a significant right skew to the number of seasons per show, indicating that many, potentially even a majority of TV shows only air for a single season.
+
 ### After Preprocessing
+
+To confirm successful deletion of non-movie and null entities from the sample data, the following code was run.
 
 ```{r  eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
 # Run preprocessing procedures
@@ -446,6 +458,36 @@ summary(as.factor(stats$Type))
 
 ```
 
+The results show that roughly a two-thirds of the original thirty thousand sample values were dropped in preprocessing. The remaining values, approximately eleven thousand elements, provide a small but adequate sample set for initial data mining tasks.
+
+The following are some fairly self-explanatory visualizations of the sample data.
+
+#### Movies By Year
+
+There was a clear and reasonable increase in the number of movies sampled for each year approaching the present day, which can be inferred to correspond to the growth of the movie industry over time.
+
+```{r eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+# Display distribution of movie years
+ggplot(stats, aes(x = factor(Year))) + geom_bar(stat = "bin")
+```
+
+### Ratings Given By Year
+
+While someone crowded, the changes in movie rating methods over periods of time can be seen, as well as the clear stratification of films marketed towards different age groups.
+
+```{r, eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+# Display ratings by year
+qplot(Year,factor(Rated),data=stats,geom=c("boxplot","jitter"))
+```
+
+### Movie Length By Year
+
+One last visualization provides the distribution of movie runtimes over the years. While several inferences could be made, without further analysis the only thing that can be safely assumed is that there is a clear distinction between short movies (under an hour) and longer films and that the distinction appears to fade as we move towards the present day.
+
+```{r, eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+# Display distribution of movies runtimes by years
+qplot(Year,Runtime,data=stats)
+```
 
 # Method and Materials
 

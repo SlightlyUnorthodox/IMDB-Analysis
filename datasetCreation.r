@@ -11,6 +11,7 @@ loadPackages1 <- function() {
   if( require(data.table) == FALSE) { install.packages("data.table") }
   if( require(jsonlite) == FALSE) { install.packages("jsonlite") }
   if( require(plyr) == FALSE) { install.packages("dplyr")}
+  if( require(ggplot2) == FALSE) { install.packages("ggplot2")}
   ready <- TRUE
 }
 while(ready == FALSE) { ready <- loadPackages1() }
