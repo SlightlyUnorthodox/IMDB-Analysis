@@ -757,8 +757,6 @@ kkModel <- kknn(Genre~., test = test, train = training, distance = 1, kernel = "
 p <- predict(kkModel, movieDataWOutGenre)
 knnCMMovie <- confusionMatrix(p, subset)
 
-
-
 ##############################################################################################
 #                             FINAL DISPLAYED RESULTS
 ##############################################################################################
