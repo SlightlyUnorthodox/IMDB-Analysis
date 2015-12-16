@@ -520,30 +520,6 @@ qplot(Year,Runtime,data=stats)
 
 ## Genre Classification
 
-### Unique Genres
-The unique genre classes were found by performing a pruning of the initial genre data.
-
-```{r, eval=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
-#Prune the data to remove excess collection space
-dataPruned <- lapply(dataGenre, function(x) {
-  # Make the collection 'unique', removing all the blank collection spots
-  x <- unique(x)
-  
-  # chop off the last 'NA' value
-  x <- x[-length(x)]
- 
-})
-#list unique genre entries
-unique(unlist(dataPruned))
-```
-
-This resulted in 29 unique genre classes and therefore 29 clusters to use in cluster analysis.
-
-
-# Method and Materials
-
-## Genre Classification
-
 The task of genre prediction reflected the efforts made in Individual Project I. Using classification methods BLAH BLAH ANDA BLAH (to be fileld later just using blah blah blah to stick out to me), we hoped effectively predict the genre of a film based off its other
 characteristics. 
 
