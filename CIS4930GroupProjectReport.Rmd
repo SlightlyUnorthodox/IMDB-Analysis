@@ -849,8 +849,7 @@ We were unable to evaluate the oblique tree classification technique becuase the
 
 **_What measures have you taken to improve the results?_**
 
-The measures we took to imporve the results as much as possible include trial and errror of which attribtues from the database
-yielded the greatest accuracy. Extreme care was also put into formatting and preprocessing the data so that the classification methods would correctly run.  
+The measures we took to imporve the results as much as possible include trial and errror of which attribtues from the database yielded the greatest accuracy. Extreme care was also put into formatting and preprocessing the data so that the classification methods would correctly run, examples can be see in the methods and materials section. To improve the results, multiple trials could have improved results by looking at subsets of data that isolate certain areas of interest like only movies from 2010-2015.
 
 
 ## Clustering
