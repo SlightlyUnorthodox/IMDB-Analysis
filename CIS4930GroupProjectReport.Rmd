@@ -567,9 +567,11 @@ c45CMMovie <- confusionMatrix(c45ModelPredictionsMovie, test$Genre)
 
 
 #OBLIQUE CLASSIFICATION 
-obliqueModelMovie <- oblique.tree(formula = Genre~., data = training, oblique.splits = "only")
+obliqueModelMovie <- oblique.tree(formula = Genre~., data = training, 
+                                  oblique.splits = "only")
 obliqueModelPredictionsMovie <- predict(obliqueModelMovie, test)
-obCMMovie <- confusionMatrix(colnames(obliqueModelPredictionsMovie)[max.col(obliqueModelPredictionsMovie)], test$Genre)
+obCMMovie <- confusionMatrix(colnames(obliqueModelPredictionsMovie)
+                             [max.col(obliqueModelPredictionsMovie)], test$Genre)
 
 
 #NAIVE BAYES CLASSIFIER
@@ -585,34 +587,11 @@ nbCMMovie <- confusionMatrix(predictions, test$Genre)
 #KNN CLASSIFIER
 #lets try getting rid of NA values
 subset <- test$Genre[1:245]
-kkModel <- kknn(Genre~., test = test, train = training, distance = 1, kernel = "triangular")
+kkModel <- kknn(Genre~., test = test, train = training, distance = 1, 
+                kernel = "triangular")
 p <- predict(kkModel, movieDataWOutGenre)
 knnCMMovie <- confusionMatrix(p, subset)
 ```
-
-## Clustering
-For cluster analysis, the dataset was reduced to included just the 'Genre' attribute. This was chosen because we believed it had the strongest correlation to grouping similar movies, as well as convenience to match the number of clusters (instructed to be equal to the number of genres). In order to prepare the dataset, the working set was converted into a weighted transactional database, where the weight was equal to one over the number of constituent genres. 
-
-```{r, eval=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
-# Load dataset
-data <- readRDS("clean10Kdataset.rds")
-```
-
-As mentioned above, we found 29 distinct genres to use as clusters. This included "N/A" as a genre. 
-We then created a matrix which mapped out the individual existence of the genre type to that movie.
-
-Using kMeans, we performed a distance based cluster analysis and appended its results to the matrix.
-
-```{r, eval=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
-# kmean cluster with k = 29 clusters (genres)
-kmeanCluster <- kmeans(distanceMatrix, 29)
-
-# append cluster number result to matrix
-distanceMatrix$cluster <- as.factor(kmeanCluster$cluster)
-```
-
-On our second attempt, we instead weighted the values of the distance matrix for each movie as a percentage.
-For example: If a movie was classified as 'Short' and 'Comedy', its weight would then be 0.5 in 'Short' and 0.5 in 'Comedy'.
 
 ## Association Rules
 For Association Rule Mining, the first subset of the dataset was reduced down to just cast members compromising of Director, Producer, Writer, and Actors. Actors initially was brought in a list of Actors and further preprocessing was done on this end. This proved lackluster and was eventually moved to the dataset creation end of the project. Actors were then fractured into four Actor components and handled appropriately. 
@@ -622,7 +601,8 @@ For Association Rule Mining, the first subset of the dataset was reduced down to
 assocData <- readRDS("clean10Kdataset.rds")
 
 # Remove columns not worthy of analysis
-assocDataSubset <- assocData[,c("Director","Producer","Writer","Cinematographer","Actor1","Actor2","Actor3","Actor4")]
+assocDataSubset <- assocData[,c("Director","Producer","Writer","Cinematographer",
+                                "Actor1","Actor2","Actor3","Actor4")]
 ```
 
 The dataset was then passed into the apriori function to generate rules
@@ -646,15 +626,37 @@ Sorted ruleset by lift.
 sortedUniqueMovieRules <- sort(uniqueMovieRules, by = "lift")
 ```
 
-For the Genre/Cast portion of the Association Rules, I attempted to bring in the Genre as a factor of 29 attributes and tried to merge it back into the main subset. This did not proved useful when trying run apriori as it gave errors of it not being in logical or factor format.  
+For the Genre/Cast portion of the Association Rules, I attempted to bring in the Genre as a factor of 29 attributes and tried to merge it back into the main subset. This did not prove useful when trying run apriori as it gave errors of it not being in logical or factor format.
+
+## Clustering
+
+For cluster analysis, the dataset was reduced to included just the 'Genre' attribute. This was chosen because we believed it had the strongest correlation to grouping similar movies, as well as convenience to match the number of clusters (instructed to be equal to the number of genres). In order to prepare the dataset, the working set was converted into a weighted transactional database, where the weight was equal to one over the number of constituent genres. 
+
+```{r, eval=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
+# Load dataset
+data <- readRDS("clean10Kdataset.rds")
+```
+
+As mentioned above, we found 29 distinct genres to use as clusters. This included "N/A" as a genre. 
+We then created a matrix which mapped out the individual existence of the genre type to that movie.
+
+Using kMeans, we performed a distance based cluster analysis and appended its results to the matrix.
+
+```{r, eval=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
+# kmean cluster with k = 29 clusters (genres)
+kmeanCluster <- kmeans(distanceMatrix, 29)
+
+# append cluster number result to matrix
+distanceMatrix$cluster <- as.factor(kmeanCluster$cluster)
+```
+
+On our second attempt, we instead weighted the values of the distance matrix for each movie as a percentage.
+For example: If a movie was classified as 'Short' and 'Comedy', its weight would then be 0.5 in 'Short' and 0.5 in 'Comedy'.
 
 # Results
 
 ## Genre Classification
 The results of the classifications are shown in demo files.
-
-## Clustering
-The result of the cluster assignments are shown in demo files.
 
 ## Association Rules
 
@@ -688,6 +690,9 @@ lhs                                               rhs
 There are no results when attempting to rectify the "lhs" portion of the the apriori. I kept getting "Unknown Item Labels" whenever trying to filter the "lhs" portion. After further researching into this, I found that I had to specify SPECIFICALLY what each Director, Producer, Actors,etc were on the "lhs" which will prove to be infeasibly as there are many possibilities for each section. 
 
 There are no results when attempting to rectify the "Genre/Cast" portion of the apriori. I attempted to fracture "Genre" into their respective genre types and run the apriori on that. There were many errors that led up to this that eventually led to this portion of the analysis to not work entirely. My attempts at the "Genre/Cast" are in the assocRules.r file but commented out to make the general apriori function runnable. 
+
+## Clustering
+The result of the cluster assignments are shown in demo files.
 
 # Discussion
 
@@ -735,6 +740,16 @@ We were unable to evaluate the oblique tree classification technique becuase the
 
 The measures we took to improve the results as much as possible include trial and error of which attribtues from the database yielded the greatest accuracy. Extreme care was also put into formatting and preprocessing the data so that the classification methods would correctly run, examples can be see in the methods and materials section. To improve the results, multiple trials could have improved results by looking at subsets of data that isolate certain areas of interest like only movies from 2010-2015.
 
+## Association Rules
+**_The number of different roles you have in your dataset._**
+The number of different roles involved for the usual casts apriori function is 7: Director, Producer, Writer, Actor1, Actor2, Actor3, and Actor4
+
+**What you put in the left-hand-side of the rules.**
+As mentioned in the Results section, I was not able to get results for this section.
+
+**How you would automatically check all the possibilities.**
+I ran apriori (the only way that R was allowing me to run) with no variables set for "lhs" and "rhs". I thought by doing the apriori this way would allow for all possibilities by not restricting those sides.
+
 
 ## Clustering
 **_Would clustering the movies into k' clusters where k' > k help in better categorization? And how._**
@@ -758,21 +773,11 @@ A density-based cluster analysis could require more clusters to be accurate, as 
 Another important consideration is the speed of the algorithm.
 kMeans performed very quickly with respect to the dataset size.
 
-## Association Rules
-**_The number of different roles you have in your dataset._**
-The number of different roles involved for the usual casts apriori function is 7: Director, Producer, Writer, Actor1, Actor2, Actor3, and Actor4
-
-**What you put in the left-hand-side of the rules.**
-As mentioned in the Results section, I was not able to get results for this section.
-
-**How you would automatically check all the possibilities.**
-I ran apriori (the only way that R was allowing me to run) with no variables set for "lhs" and "rhs". I thought by doing the apriori this way would allow for all possibilities by not restricting those sides.
-
 # Conclusion
 
 Regardless of the results, after the work done to tackle these data mining problems there are several clear avenues of approach for future endeavors. Ideally, a bigger dataset would be built, allowing for a greater variety of sampling methods to be applied, namely k-folds and stratified sampling. It seems apparent that the results for each task could have been improved by taking a stratified sample by movie years or even genres (for developing *usual casts*). Building a larger dataset could be done rather easily, it's primarily a question of time and resources. In the process of building the small "10K" dataset used here, the limiting factor was internet speed and availability, the risk of having a connection drop out mid web-sraping process prevented trying to run longer/larger python API-calls.
 
-## References & Resources
+# References & Resources
 
 The Internet Movie Database
 [IMDb](http://www.imdb.com)
