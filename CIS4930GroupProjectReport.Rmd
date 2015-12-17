@@ -44,7 +44,7 @@ The data overview is divided into the following steps, as significant decisions 
 * Preprocessing
 * Datset Statistics
 
-```{r eval=FALSE,echo=FALSE,warning=FALSE,message=FALSE}
+```{r eval=TRUE,echo=FALSE,warning=FALSE,message=FALSE}
 #Dynamically load/install required packages
 ready <- FALSE
 loadPackages1 <- function() {
@@ -78,7 +78,7 @@ Numerous efforts were carried out to build a work sample set for this project, a
 
 **Round Three**: Python Script and Web APIs
   
-  * Efforts: Employ python scripts and API calls to the Internet Movie Database and the Open Movie Database.
+  * Efforts: Employed python scripts and API calls to the Internet Movie Database and the Open Movie Database.
   * Cons: Very slow (internet connection-bound)
 
 Our working dataset was created using a python script making calls to the OMDb API. While this method was slow, completing approximately 3-5 http requests per second on an average wifi connection, it saved an enormous amount of time in preprocessing and fine-tuning as it loaded all the available, useful information as JSON objects which could be read into R efficiently and cheaply.
@@ -122,7 +122,16 @@ with codecs.open('imdb_re_30k_sample.txt','w','utf8') as f:
 	json.dump(data, f)
 ```
 
-It was discovered further on in the process on building the sample set that the Open Movie Database was missing a number of values from the IMDb database. To rectify this, another python script, *castscrape.py* was written using a list of the subset of IMDb movie IDs selected in preprocessing. The script used the IMDbPy API to return additional cast items: *Producer*, *Cinematographer*, *Composer*, and *CostumeDesigners*.
+It was discovered further on in the process on building the sample set that the Open Movie Database was missing a number of values from the IMDb database. To rectify this, another python script, *castscrape.py* was written using a list of the subset of IMDb movie IDs selected in preprocessing. The script used the IMDbPy API to return additional cast items: *Producer*, *Cinematographer*, *Composer*, and *CostumeDesigners*, with varying degress of success.
+
+While *Producre* and *Cinematographer* were succesfully retrieved, albeit requiring a substantial amount of parsing and cleaning via regular expressions, the inavailability of documentation led to *Cinematographer* and *Composer* being scrapped as viable candidate variables.
+
+At the end of initial dataset building phase, the working set contained the following variables.
+
+```{r eval=TRUE,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
+data <- readRDS("clean10Kdataset.rds")
+names(data[1:29])
+```
 
 ```{r eval=FALSE,echo=FALSE}
 ## Title: IMDB sample database creator
@@ -212,7 +221,7 @@ with open('imdb_10K_cast_plus.csv','wb') as csvfile:
 
 Having created a working dataset, the function, *jsonToCsv*, was written to speed up the process of formatting the data for use in R. *jsonToCsv* first reads the json object from the given file (defaulting to *imdb_30K_sample.json*) using the R package *jsonlite*. While the function returns a data frame, it also  backs up the data to a local csv file.
 
-```{r eval=FALSE, echo = FALSE}
+```{r eval=TRUE, echo = FALSE,warning=FALSE,message=FALSE}
 # Reformat OMDB JSON queries as csv
 jsonToCsv <- function(filename = "imdb_30K_sample.json",write=TRUE,
                       csvfile = "imdb_30K_sample.csv") {
@@ -225,17 +234,11 @@ jsonToCsv <- function(filename = "imdb_30K_sample.json",write=TRUE,
 data <- jsonToCsv()
 ```
 
-The initial OMDb query returned the following attributes for each movie.
-
-```{r eval=FALSE}
-names(data)
-```
-
-Not all of these attributes were for use in any data mining task, however they were retained for archiveal purposes. In particular, *seriesID*, *Episode*, and *Season* were largely useless because non-movie elements were dropped from the sample set. Also, the values for *Poster*, *imdbID*, *Response*, and *Error* were more for archival purposes than any data mining task.
+Not all of the original attributes described in the previous section were for use in any data mining task, however they were retained for archival purposes. In particular, *seriesID*, *Episode*, and *Season* were largely useless because non-movie elements were dropped from the sample set. Also, the values for *Poster*, *imdbID*, *Response*, and *Error* were artifacts retained from converting the JSON objects to an R useable format.
 
 Each attribute were individually examined and set to the right type. An example of some of the variable preprocessing can be seen below with the *timeSet* function which was used on *Runtime*. The original *Runtime* data had three cases: **"N/A"**, **"# hours # min"**, or **"# min"**. These were reduced down to as single numeric for the number of minutes, with "N/A" values being 0 minutes.
 
-```{r eval=FALSE,echo=FALSE}
+```{r eval=FALSE,echo=TRUE}
 # Runtime reformat, string -> minutes (integer)
 timeSet <- function(x) {
   if(length(x == 2)) {
@@ -249,11 +252,18 @@ timeSet <- function(x) {
 }
 ```
 
-The values for *Writers*, *Actors*, *Genres*, and several other variables were originally retrieved from JSON as strings of names, often with rough formatting. The preprocessing 
+The values for *Writers*, *Actors*, *Genres*, and several other variables were originally retrieved from JSON as strings of names, often with rough formatting. What was typically done to handle this format was to specify a maximum number of accepted values, in the case of actors 4, and expand the list into that maximum number of unique columns.
 
-Note that the script ends with two significant steps:
+```{r eval=TRUE,echo=FALSE}
+data <- readRDS("clean10Kdataset.rds")
+names(data[24:27])
+```
 
-1. Subset data to retain only movies (30K rows ==> ~12K rows)
+More details about the preprocessing steps can be found in the appendix with the provided code base.
+
+The preprocessing stage ends with two significant steps:
+
+1. Subset data to retain only movies (30K rows ==> ~11K rows)
 2. Save dataset to R data object and to csv (for coherent use across all project members)
 
 ```{r eval=FALSE,echo=FALSE}
@@ -429,7 +439,11 @@ preprocessing <- function(data) {
 }
 ```
 
-At the end of the preprocessing stage, the full list of dataset variables was:
+At the end of the preprocessing stage, the full count of movies by data set attribute was as shown below. Note that variables pertaining to TV shows and other non-movie entries show 0 results for movies. This is a results of building the final sample set.
+
+```{r eval=TRUE,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
+colSums(!is.na(data[1:29]))
+```
 
 ```{r eval=FALSE, echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
 data <- preprocessing(data)
@@ -444,8 +458,7 @@ The following are some of the observations made in determining statistical valid
 
 An initial query was made to examine how many of the original 30K elements were valid movies as well as how many showed up as null values.
 
-
-```{r eval=FALSE,echo=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+```{r eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
 # Prepare example set
 stats <- jsonToCsv()
 
@@ -462,9 +475,9 @@ As shown here, a significant majority of the tuples were actually episodes, whic
 
 To confirm successful deletion of non-movie and null entities from the sample data, the following code was run.
 
-```{r  eval=FALSE,echo=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
-# Run preprocessing procedures
-stats <- preprocessing(stats)
+```{r  eval=TRUE,echo=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
+# Load preprocessed data
+stats <- readRDS("clean10Kdataset.rds")
 
 # Null rows in original query set (dropped in preprocessing)
 sum(is.na(as.factor(stats$Type)))
@@ -482,7 +495,7 @@ The following are some fairly self-explanatory visualizations of the sample data
 
 There was a clear and reasonable increase in the number of movies sampled for each year approaching the present day, which can be inferred to correspond to the growth of the movie industry over time.
 
-```{r eval=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
+```{r eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
 # Display distribution of movie years
 ggplot(stats, aes(x = factor(Year))) + geom_bar(stat = "bin")
 ```
@@ -491,7 +504,7 @@ ggplot(stats, aes(x = factor(Year))) + geom_bar(stat = "bin")
 
 While someone crowded, the changes in movie rating methods over periods of time can be seen, as well as the clear stratification of films marketed towards different age groups.
 
-```{r, eval=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
+```{r, eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
 # Display ratings by year
 qplot(Year,factor(Rated),data=stats,geom=c("boxplot","jitter"))
 ```
@@ -500,7 +513,7 @@ qplot(Year,factor(Rated),data=stats,geom=c("boxplot","jitter"))
 
 One last visualization provides the distribution of movie runtimes over the years. While several inferences could be made, without further analysis the only thing that can be safely assumed is that there is a clear distinction between short movies (under an hour) and longer films and that the distinction appears to fade as we move towards the present day.
 
-```{r, eval=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
+```{r, eval=TRUE,warning=FALSE,message=FALSE,cache=TRUE}
 # Display distribution of movies runtimes by years
 qplot(Year,Runtime,data=stats)
 ```
@@ -762,13 +775,13 @@ Regardless of the results, after the work done to tackle these data mining probl
 ## References & Resources
 
 The Internet Movie Database
-[http://www.imdb.com](IMDb)
+[IMDb](http://www.imdb.com)
 
 IMDbPY - Python API and Materials for IMDB searches
-[http://www.imdbpy.sourceforge.net](IMDbPY & imdbpy2sql.py)
+[IMDbPY & imdbpy2sql.py](http://www.imdbpy.sourceforge.net)
 
 The Open Movie Database
-[http://www.omdbapi.com/](OMDb API)
+[OMDb API](http://www.omdbapi.com/)
 
 ## Readings
 
@@ -778,14 +791,15 @@ IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS, VOL. UNKNOWN, NO. UNKNOWN, U
 * 'Predicting Movie Success Based on IMDB Data' by Nithin VR, Pranav M, Sarath Babu PB, and Lijiya A
 International Journal of Data Mining Techniques and Applications Volume: 03, June 2014, Pages: 365-368 
 
+\newpage
+
 # Appendix
 
 ## Code Repository
 
-The full code base can be found at [https://github.com/SlightlyUnorthodox/IMDB-Analysis](IMDB-Analysis)
+The full code base can be found at [IMDB-Analysis](https://github.com/SlightlyUnorthodox/IMDB-Analysis)
 
-Individual member contributions can be evaluated at 
-[https://github.com/SlightlyUnorthodox/IMDB-Analysis/graphs/contributors](IMDB-Analysis/Contributors)
+Individual member contributions can be evaluated at [IMDB-Analysis/Contributors](https://github.com/SlightlyUnorthodox/IMDB-Analysis/graphs/contributors)
 
 Student name to github usernames:
 
