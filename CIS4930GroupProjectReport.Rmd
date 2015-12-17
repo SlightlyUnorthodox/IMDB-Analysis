@@ -898,17 +898,20 @@ Briefly, both the Oblique tree and the K Nearest Neighbors methods were found to
 
 ```{r eval=TRUE,echo=FALSE}
 print(ripCMMovie$overall)
+summary(ripperPredictionsMovie)
 ```
 
 
 ### C4.5 Results
 ```{r eval=TRUE,echo=FALSE}
 print(c45CMMovie$overall)
+summary(c45ModelPredictionsMovie)
 ```
 
 ### NAIVE BAYES Results
 ```{r eval=TRUE,echo=FALSE}
 print(nbCMMovie$overall)
+summary(predictions)
 ```
 
 ## Association Rules
@@ -918,7 +921,7 @@ When running apriori on the general subset produced 20 rules based on support va
 ```{r eval=FALSE,echo=TRUE,message=FALSE,warning=FALSE,cache=TRUE}
 lhs                                              rhs
 {Actor2=John Murray}                           => {Actor1=Dewey 'Pigmeat' Markham}            
-{Cinematographer=['Campos, Ant\xc3\xb4nio']} => {Director=Antônio Campos}                   
+{Cinematographer=['Campos, Ant\xc3\xb4nio']} => {Director=AntÃ´nio Campos}                   
 {Director=Lionel Soukaz}                       => {Cinematographer=['Soukaz, Lionel']}         
 {Director=John Randolph Bray}                  => {Writer=John Randolph Bray}                 
 {Writer=Miodrag Jovanovic}                     => {Director=Miodrag Jovanovic}                 
@@ -928,8 +931,8 @@ lhs                                              rhs
 {Writer=Stanoje Makivic, Branko Segovic}       => {Cinematographer=['Pavlovic, Mihailo']}
 {Director=Henry 'Hy' Mayer}                    => {Writer=Henry 'Hy' Mayer}                  
 {Cinematographer=['Oberti, Ralf']}             => {Writer=Ralf Oberti, Rodolfo Paredes}      
-{Cinematographer=['Oberti, Ralf']}             => {Director=Jorge López, Ralf Oberti}         
-{Writer=Ralf Oberti, Rodolfo Paredes}          => {Director=Jorge López, Ralf Oberti}         
+{Cinematographer=['Oberti, Ralf']}             => {Director=Jorge LÃ³pez, Ralf Oberti}         
+{Writer=Ralf Oberti, Rodolfo Paredes}          => {Director=Jorge LÃ³pez, Ralf Oberti}         
 {Cinematographer=['Paul, Robert W.']}          => {Director=Robert W. Paul}                   
 {Director=Scott Eldridge}                 => {Producer=['Eldridge, Scott', 'Fried, Joe']}
 {Cinematographer=['Yamazaki, Rima']}           => {Director=Rima Yamazaki}                     
