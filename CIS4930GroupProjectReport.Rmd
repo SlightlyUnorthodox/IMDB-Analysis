@@ -915,16 +915,18 @@ summary(predictions)
 ```
 
 ## KNN Results
-```{r eval=False,echo=FALSE}
-Accuracy          Kappa  AccuracyLower  AccuracyUpper   AccuracyNull AccuracyPValue  McnemarPValue 
-    0.05725191    -0.05344207     0.03239399     0.09267109     0.23664122     1.00000000            NaN 
-summary(knnPredictions)
-     Action       Adult   Adventure   Animation   Biography      Comedy       Crime Documentary       Drama      Family 
-         30          15          11           2           7          37          20           2          69           0 
-    Fantasy   Film-Noir   Game-Show     History      Horror       Music     Musical     Mystery        News  Reality-TV 
-          3           0           0           2          14           7           1           4           0           0 
-    Romance      Sci-Fi       Short       Sport   Talk-Show    Thriller         War     Western 
-          9           6           6           1           0          12           2           2 
+```{r eval=FALSE,echo=TRUE}
+Accuracy      Kappa         AccuracyLower  AccuracyUpper  AccuracyNull AccuracyPValue 
+0.05725191    -0.05344207   0.03239399     0.09267109     0.23664122   1.00000000       
+
+Action       Adult     Adventure   Animation   Biography   Comedy      Crime 
+30           15        11          2           7           37          20 
+Documentary   Drama     Family      Fantasy     Film-Noir   Game-Show   History
+2             69        0           3           0           0           2          
+Horror        Music     Musical     Mystery     News        Reality-TV  Romance      
+14            7         1           4           0           0           9                  
+Sci-Fi        Short     Sport       Talk-Show   Thriller    War         Western 
+6             6         1           0           12          2           2 
 ```
 
 
@@ -1344,7 +1346,7 @@ We were unable to evaluate the oblique tree classification technique becuase the
 
 The measures we took to improve the results as much as possible include trial and error of which attribtues from the database yielded the greatest accuracy. Extreme care was also put into formatting and preprocessing the data so that the classification methods would correctly run, examples can be see in the methods and materials section. To improve the results, multiple trials could have improved results by looking at subsets of data that isolate certain areas of interest like only movies from 2010-2015. Furthermore, to check for the most ideal combination and number of attributes to be used for classifying, attributes were taken out and the same methods were run on the modified data set in order to see the weight and gravity of each attribute in determining their genre. Such trials were created as shown below:
 
-```{r eval=TRUE,echo=FALSE}
+```{r eval=FALSE,echo=TRUE}
 #testing affect of director
 trainingNoDirector <- training[,-3]
 movieDataNoGenreNoDirector <- movieDataWOutGenre[,-3]
