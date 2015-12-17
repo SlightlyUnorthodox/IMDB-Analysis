@@ -657,7 +657,7 @@ For example: If a movie was classified as 'Short' and 'Comedy', its weight would
 
 ## Genre Classification
 
-
+The following are the results produced by each classification technique applied to the problem of genre classification.
 
 ```{r eval=TRUE,echo=FALSE,message=FALSE,warning=FALSE,cache=TRUE}
 ##############################################################################################
@@ -889,7 +889,13 @@ nbCMMovie <- confusionMatrix(predictions, test$Genre)
 # RIPPER
 ```
 
+
+### OBLIQUE & KKN Results
+
+Briefly, both the Oblique tree and the K Nearest Neighbors methods were found to require far more memory than could be supplied by R when applied to the sample set.
+
 ### RIPPER Results
+
 ```{r eval=TRUE,echo=FALSE}
 print(ripCMMovie$overall)
 ```
@@ -900,16 +906,10 @@ print(ripCMMovie$overall)
 print(c45CMMovie$overall)
 ```
 
-### OBLIQUE Results
-
 ### NAIVE BAYES Results
 ```{r eval=TRUE,echo=FALSE}
 print(nbCMMovie$overall)
 ```
-
-### KKN Results
-
-
 
 ## Association Rules
 
