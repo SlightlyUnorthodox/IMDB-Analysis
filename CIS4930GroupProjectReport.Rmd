@@ -892,7 +892,7 @@ nbCMMovie <- confusionMatrix(predictions, test$Genre)
 
 ### OBLIQUE & KKN Results
 
-Briefly, both the Oblique tree and the K Nearest Neighbors methods were found to require far more memory than could be supplied by R when applied to the sample set.
+Briefly, both the Oblique tree and the K Nearest Neighbors methods were found to require far more memory than could be supplied by R when applied to the sample set. 
 
 ### RIPPER Results
 
@@ -913,6 +913,20 @@ summary(c45ModelPredictionsMovie)
 print(nbCMMovie$overall)
 summary(predictions)
 ```
+
+## KNN Results
+```{r eval=False,echo=FALSE}
+Accuracy          Kappa  AccuracyLower  AccuracyUpper   AccuracyNull AccuracyPValue  McnemarPValue 
+    0.05725191    -0.05344207     0.03239399     0.09267109     0.23664122     1.00000000            NaN 
+summary(knnPredictions)
+     Action       Adult   Adventure   Animation   Biography      Comedy       Crime Documentary       Drama      Family 
+         30          15          11           2           7          37          20           2          69           0 
+    Fantasy   Film-Noir   Game-Show     History      Horror       Music     Musical     Mystery        News  Reality-TV 
+          3           0           0           2          14           7           1           4           0           0 
+    Romance      Sci-Fi       Short       Sport   Talk-Show    Thriller         War     Western 
+          9           6           6           1           0          12           2           2 
+```
+
 
 ## Association Rules
 
@@ -1339,6 +1353,16 @@ We were unable to evaluate the oblique tree classification technique becuase the
 **_What measures have you taken to improve the results?_**
 
 The measures we took to improve the results as much as possible include trial and error of which attribtues from the database yielded the greatest accuracy. Extreme care was also put into formatting and preprocessing the data so that the classification methods would correctly run, examples can be see in the methods and materials section. To improve the results, multiple trials could have improved results by looking at subsets of data that isolate certain areas of interest like only movies from 2010-2015.
+
+```{r eval=TRUE,echo=FALSE}
+#testing affect of director
+trainingNoDirector <- training[,-3]
+movieDataNoGenreNoDirector <- movieDataWOutGenre[,-3]
+#C4.5 CLASSIFICATION
+c45ModelMovie <- J48(Genre~., data = trainingNoDirector)
+c45ModelPredictionsMovie <- predict(c45ModelMovie, movieDataNoGenreNoDirector)
+c45CMMovie <- confusionMatrix(c45ModelPredictionsMovie, test$Genre)
+```
 
 ## Association Rules
 **_The number of different roles you have in your dataset._**
