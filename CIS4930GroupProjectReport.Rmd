@@ -534,108 +534,8 @@ One of the first steps in achieving this goal was first formatting the data in a
 For example, the imdbID attribute was removed from the dataset when creating the training and test sets since it was independent of
 predicting the genre of the film. 
 
-One type of preprocessing that we addressed was for the Producer and Cinematographer columns the data was formatted as such
-['LastName, FirstName']. In order to use this data in a format that could be used by the classification methods we performed the following operations. Note: Same process was run for Cinematographer
-
-```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
-###################################### fix producer ######################################
-
-# single quote removal
-movieData$Producer <- lapply(movieData$Producer, function(x){
-  gsub("\'", "", x)#
-})
-
-# double quote removal
-movieData$Producer <- lapply(movieData$Producer, function(x){
-  gsub("\"", "", x)#
-})
-
-# remove brackets
-movieData$Producer <- lapply(movieData$Producer, function(x){
-  gsub("\\[", "", x)#
-})
-
-movieData$Producer <- lapply(movieData$Producer, function(x){
-  gsub("\\]", "", x)#
-})
-
-movieData$Producer <- lapply(movieData$Producer, function(x){
-strsplit(x,",")
-})
-
-firstName <- lapply(movieData$Producer, function(x){
- x[[1]][2]
-})
-
-lastName <- lapply(movieData$Producer, function(x){
-  x[[1]][1]
-})
-
-movieData$Producer <- paste(firstName, lastName)
-```
-
-One other type of processing we had to address was for the column 'Writer' because it read in with parenthetical notes that affected how the classification algorithms performed. The processing is shown below:
-
-```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
-# Cleans writer entries
-movieData$Writer <- lapply(movieData$Writer, function(x) {
-  gsub( " *\\(.*?\\) *", "", x)
-  })
-```
-
-The following code below are snippets of the key functions of the GenreClassification.R script:
-
-Here we remove the columns that don't aid classification:
-
-```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
-
-# remove unneeded variables
-movieData <- movieData[,-c(1,2,6,7,8, 9, 11, 12, 14, 15, 16, 17, 20, 21, 23, 30 ,31)]
-```
-
-Here we use unnest because some of our attributes are stored as lists and for processing purposes they needed to be their own rows.
-
-```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
-# Create unique rows for each genre
-movieData <- unnest(movieData,Genre)
-movieData <- unnest(movieData, Writer)
-#movieData <- unnest(movieData, Actors)
-movieData <- unnest(movieData, Country)
-```
-
-Here we remove the rows with the NA genre because these cannot be classified:
-
-```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
-movieData <- movieData[!(is.na(as.factor(movieData$Genre))),]
-movieData <- movieData[!movieData$Genre == "N/A",]
-movieData$Genre <- as.factor(movieData$Genre)
-```
-
-Here we cast the string as factors so that the classification algorithms have the correct parameters:
-
-```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
-# Cast as factor
-movieData$Rated <- as.factor(movieData$Rated)
-movieData$Title <- as.factor(movieData$Title)
-movieData$Director <- as.factor(movieData$Director)
-movieData$Actor1 <- as.factor(movieData$Actor1)
-movieData$Actor2 <- as.factor(movieData$Actor2)
-movieData$Actor3 <- as.factor(movieData$Actor3)
-movieData$Actor4 <- as.factor(movieData$Actor4)
-movieData$Producer <- as.factor(movieData$Producer)
-movieData$Cinematographer <- as.factor(movieData$Cinematographer)
-movieData$Writer <- as.factor(movieData$Writer)
-movieData$Country <- as.factor(movieData$Country)
-```
-
-Like in project I we assign training and test sets:
-
-```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE} 
-# Create test and training sets
-part <- createDataPartition(movieData$Genre,p=0.8,list=FALSE)
-training <- movieData[part,]
-test <- movieData[-part,]
-```
+Another type of format preprocessing that we addressed was for the Producer and Cinematographer columns the data was formatted as such
+['LastName, FirstName']. In addition the date for the 'Writer' column had parenthetical notes that also affected how the classification algorithm performed. Using Regex's and gsub, these attribute values were modified to fit an acceptable format. Additionally, we also trimmed the column data by removing the attributes that are independent of genre such as Rating. Some of the attributes were stored as lists so using the 'unnest' function was necessary in order to process the data. Any row with NA as the Genre value was also removed. All the nominal values stored in the data also needed to be cast as factors before being run through the classification algorithms. 
 
 Here are the classification algorithms we utilized, note we don't run the oblique method because it fails due to memory allocation:
 
@@ -675,21 +575,6 @@ subset <- test$Genre[1:245]
 kkModel <- kknn(Genre~., test = test, train = training, distance = 1, kernel = "triangular")
 p <- predict(kkModel, movieDataWOutGenre)
 knnCMMovie <- confusionMatrix(p, subset)
-```
-
-Below prints the accuracies for each method used above in a table:
-
-```{r eval=FALSE,echo=TRUE,cache=TRUE,warning=FALSE,message=FALSE}
-accRipMovie <- ripCMMovie$overall[1]
-accC45Movie <- c45CMMovie$overall[1]
-accNBMovie <- nbCMMovie$overall[1]
-accKNNMovie <- knnCMMovie$overall[1]
-
-accuracyMatrix <- matrix(c(accRipMovie, accC45Movie, accNBMovie, accKNNMovie), ncol = 1, byrow = TRUE)
-colnames(accuracyMatrix) <- c("Movie Data Accuracies")
-rownames(accuracyMatrix) <- c("Ripper", "C4.5", "Naive Bayes", "KNN")
-accuracyMatrix <- as.table(accuracyMatrix)
-print(accuracyMatrix)
 ```
 
 ## Clustering
