@@ -949,6 +949,8 @@ There are no results when attempting to rectify the "Genre/Cast" portion of the 
 
 ## Clustering
 
+Using the following list of genres, similar movies were broken up into 723 clusters (out of approximately 11K movies). This provided a reasonable means to provide a list of similar movies for any given movie.
+
 ```{r eval=TRUE,echo=FALSE,warning=FALSE,message=FALSE,cache=TRUE}
 # Project: CIS4930 Group Project
 # Authors: Dax Gerts, ...
