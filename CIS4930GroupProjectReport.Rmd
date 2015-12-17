@@ -890,9 +890,9 @@ nbCMMovie <- confusionMatrix(predictions, test$Genre)
 ```
 
 
-### OBLIQUE & KKN Results
+### OBLIQUE 
 
-Briefly, both the Oblique tree and the K Nearest Neighbors methods were found to require far more memory than could be supplied by R when applied to the sample set. 
+Briefly, the Oblique tree was found to require far more memory than could be supplied by R when applied to the sample set, so no results can be shown for this method.
 
 ### RIPPER Results
 
@@ -1314,16 +1314,7 @@ write.csv(csvDataPe,file="clusterpc.csv",row.names = FALSE)
 
 **_What were our options for classification?_**
 
-Our options for classification included:
-1. imdbID             8. imdbVotes            15. imdbRating          22. Response
-2. Plot               9. seriesID             16. Poster              23. Year
-3. Rated              10. Season              17. Episode             24. Error
-4. Title              11. Director            18. Language            25. Producer
-5. Writer             12. Released            19. Country             26. Cinematographer
-6. Actors             13. Awards              20. Metascore           27. Composer
-7. Type               14. Genre               21. Runtime             28. CostumeDesigner
-
-Of the 28 options listed, at the end of the day only 12 attributes ended up being used for genre classification.
+Of the 29 attributes mentioned in earlier parts, only 12 attributes ended up being used for genre classification.
 These attributes are:
 
 1. Rated                  7. Cinematographer
@@ -1349,10 +1340,9 @@ Through comparing their accuracies we were able to see which classification tech
 
 We were unable to evaluate the oblique tree classification technique becuase the size of the vector created in the oblique tree algorithm exceed 1.5 gigabytes and R Studio would not store that large of a variable. So that classification method is commented out in the code as shown in the displayed script.
 
-
 **_What measures have you taken to improve the results?_**
 
-The measures we took to improve the results as much as possible include trial and error of which attribtues from the database yielded the greatest accuracy. Extreme care was also put into formatting and preprocessing the data so that the classification methods would correctly run, examples can be see in the methods and materials section. To improve the results, multiple trials could have improved results by looking at subsets of data that isolate certain areas of interest like only movies from 2010-2015.
+The measures we took to improve the results as much as possible include trial and error of which attribtues from the database yielded the greatest accuracy. Extreme care was also put into formatting and preprocessing the data so that the classification methods would correctly run, examples can be see in the methods and materials section. To improve the results, multiple trials could have improved results by looking at subsets of data that isolate certain areas of interest like only movies from 2010-2015. Furthermore, to check for the most ideal combination and number of attributes to be used for classifying, attributes were taken out and the same methods were run on the modified data set in order to see the weight and gravity of each attribute in determining their genre. Such trials were created as shown below:
 
 ```{r eval=TRUE,echo=FALSE}
 #testing affect of director
@@ -1363,16 +1353,24 @@ c45ModelMovie <- J48(Genre~., data = trainingNoDirector)
 c45ModelPredictionsMovie <- predict(c45ModelMovie, movieDataNoGenreNoDirector)
 c45CMMovie <- confusionMatrix(c45ModelPredictionsMovie, test$Genre)
 ```
+In this example, the director attribute was removed in order to see if it would yield significant improvements on accuracy. Multiple trials of what is shown above were utilized to reach the ideal list of attributes used during classification.
+
+**_Further Thoughts_**
+
+Furhter analysis on the classification methods shows that of the methods utilized, Naive Bayes and Ripper yielded the most promising results. While knn yielded very inaccurate results and c4.5 seemed to be very biased towards the most dominant Genre in the set: "Drama". The code blurb shown above was utilized especially for c4.5 in order to yield some classifications other than "Drama" but no matter the attributes used, the movies were classified as "Drama". 
+
 
 ## Association Rules
 **_The number of different roles you have in your dataset._**
-The number of different roles involved for the usual casts apriori function is 7: Director, Producer, Writer, Actor1, Actor2, Actor3, and Actor4
+The number of different roles involved for the usual casts apriori function is 7: Director, Producer, Writer, Actor1, Actor2, Actor3, and Actor4. These roles were chosen because more often than not, these individuals usually have preferences and tendencies to work together in the real world, so we aimed to show this relationship with our project. Other members we could have included were Cinematographer, Composer, and Costume Designer. The roles just mentioned are more specialized and often show very tight relationships with one anohter. 
+
+Another way we could have chosen roles was to run multiple passes with different combinations of all the cast members mentioned above. For example, found association rules using only the attributes 'Composer', 'Director', and 'Costume Designer' would have been one pass. Information like htis would have been useful to show the different types of associations in the film industry. In the example just given, it is known that Tim Burton often works with the Composer Danny Elfman and has the same costume designer for many of his films. Other relationships like that have to exists so running multiple passes with specialized attribute sets could have led to more complete association rules. Additionally, the roles we chose were selected for the sake of getting the apriori algortihm to run in light of the issues we had. 
 
 **What you put in the left-hand-side of the rules.**
 As mentioned in the Results section, I was not able to get results for this section.
 
 **How you would automatically check all the possibilities.**
-I ran apriori (the only way that R was allowing me to run) with no variables set for "lhs" and "rhs". I thought by doing the apriori this way would allow for all possibilities by not restricting those sides.
+I ran apriori (the only way that R was allowing me to run) with no variables set for "lhs" and "rhs". We thought by doing the apriori this way would allow for all possibilities by not restricting those sides. We could have also utilized someting mentioned in the first question where we create a list of all possible subsets of attributes and run through each uniqe attribute list subset.
 
 
 ## Clustering
@@ -1385,6 +1383,8 @@ This resulted in 723 distinct genre entries used in our dataset.
 Given this result, using `k' > k` as our new cluster quantity could definitely improve the movie categorization. 
 For example, movies that frequently appeared as 'Short' and 'Comedy' could be considered for its own cluster now (a cluster for a hybrid genre, if you will).
 
+Furthermore, by increasing the total number of clusters, we are presented with the opportunity to potentially add in more attributes in order to create even more specialized clusters. With a smaller amount of clusters analyzing too many attributes at once can muddle the data because you are tyring to fit such a large amount of dimensionality into only a couple groups which will yeild more impure clusters.
+
 **_Which clustering method works best in this case? And why._**
 
 Because we were instructed to use `k = # genres` as our cluster amount, the best clustering method was definitely to use a distance based algorithm. 
@@ -1396,7 +1396,7 @@ kMeans performed very quickly with respect to the dataset size.
 
 # Conclusion
 
-If there was any lesson that was learned from this project, it was that data mining requires not only good data, but a clear understanding of that data. While we were able to build a reasonable sample dataset from the IMDb resources, the major stumbling point for each task was the ability to make valid statistical insights from the data and results.
+If there was any lesson that was learned from this project, it was that data mining requires not only good data, but a clear understanding of that data. While we were able to build a reasonable sample dataset from the IMDb resources, the major stumbling point for each task was the ability to make valid statistical insights from the data and results. However, simply extracting the information form the database in a way that was clean and useable proved to be a very time consuming and tedious task.
 
 In some cases, particularly with naive classification and ruleset-building, this didn't end up being too much of an issue, as the methods could produce relatively valid results even in the absence of clear analysis. However, when the "similar movies" task was handled, it was clear that this misunderstanding of the data made it impossible to obtain valid and usable results.
 
